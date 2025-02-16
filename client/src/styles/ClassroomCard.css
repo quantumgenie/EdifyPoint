@@ -1,0 +1,64 @@
+.classroom-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 200px;
+  min-height: 200px;
+}
+
+.classroom-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.classroom-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
+}
+
+.classroom-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.classroom-name {
+  font-size: 1.2em;
+  margin: 0;
+  text-align: center;
+  color: #333;
+}
+
+.student-count {
+  color: #666;
+  margin: 5px 0 0;
+}
+
+.add-card {
+  border: 2px dashed #ccc;
+  background: #f9f9f9;
+}
+
+.add-icon {
+  font-size: 3em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.add-text {
+  color: #666;
+}
+
+.classroom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+} 
