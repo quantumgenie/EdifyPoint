@@ -33,6 +33,8 @@ const CreateEventModal = ({ isOpen, onClose, onSubmit, event }) => {
         theme: ''
       });
     }
+    console.log('Event as is passed: ', event);
+    console.log('Event FormData: ', formData);
   }, [event]);
 
   const handleChange = (e) => {

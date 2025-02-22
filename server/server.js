@@ -40,8 +40,8 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/classrooms', classroomRoutes);
-app.use('/api/classrooms/events', eventRoutes);
-app.use('/api/classrooms/reports', reportRoutes); 
+app.use('/api/classroom/events', eventRoutes);
+app.use('/api/classroom/reports', reportRoutes); 
 app.use('/api/parents', parentRoutes);
 
 // add protected route

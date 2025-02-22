@@ -5,7 +5,7 @@ const Student = require('../models/Student');
 const { authMiddleware, verifyTeacher } = require('../middleware/auth');
 
 // Create a new report (teachers only)
-router.post('/create/:classId/:studentId', authMiddleware, verifyTeacher, async (req, res) => {
+router.post('/create-report/:classId/:studentId', authMiddleware, verifyTeacher, async (req, res) => {
   try {
     const report = new Report({
       ...req.body,
@@ -16,7 +16,7 @@ router.post('/create/:classId/:studentId', authMiddleware, verifyTeacher, async 
     await report.save();
     const populatedReport = await Report.findById(report._id)
       .populate('studentId', 'firstName lastName')
-      .populate('teacherId', 'firstName lastName title');
+      
     
     res.status(201).json(populatedReport);
   } catch (err) {
@@ -25,7 +25,7 @@ router.post('/create/:classId/:studentId', authMiddleware, verifyTeacher, async 
 });
 
 // Get all reports for a student in a class
-router.get('/:classId/student/:studentId', authMiddleware, async (req, res) => {
+router.get('/:classId/:studentId', authMiddleware, async (req, res) => {
   try {
     // If parent, verify they have access to this student
     if (req.user.role === 'parent') {
@@ -40,7 +40,6 @@ router.get('/:classId/student/:studentId', authMiddleware, async (req, res) => {
       classId: req.params.classId
     })
     .populate('studentId', 'firstName lastName')
-    .populate('teacherId', 'firstName lastName title')
     .sort({ createdAt: -1 });
     
     res.json(reports);
@@ -61,7 +60,6 @@ router.get('/:classId/type/:type', authMiddleware, verifyTeacher, async (req, re
       classId: req.params.classId
     })
       .populate('studentId', 'firstName lastName')
-      .populate('teacherId', 'firstName lastName title')
       .sort({ createdAt: -1 });
     res.json(reports);
   } catch (err) {
@@ -94,7 +92,6 @@ router.get('/:classId/range', authMiddleware, async (req, res) => {
 
     const reports = await Report.find(query)
       .populate('studentId', 'firstName lastName')
-      .populate('teacherId', 'firstName lastName title')
       .sort({ 'observedPeriod.start': 1 });
 
     res.json(reports);
@@ -108,7 +105,7 @@ router.get('/:classId/:id', authMiddleware, async (req, res) => {
   try {
     const report = await Report.findById(req.params.id)
       .populate('studentId', 'firstName lastName')
-      .populate('teacherId', 'firstName lastName title');
+      
     
     if (!report || report.classId !== req.params.classId) {
       return res.status(404).json({ message: 'Report not found' });
@@ -129,23 +126,12 @@ router.get('/:classId/:id', authMiddleware, async (req, res) => {
 });
 
 // Update a report (teachers only)
-router.put('/:classId/:id', authMiddleware, verifyTeacher, async (req, res) => {
+router.put('/update-report/:classId/:studentId/:id', authMiddleware, verifyTeacher, async (req, res) => {
   try {
     const report = await Report.findById(req.params.id);
     
-    if (!report || report.classId !== req.params.classId) {
+    if (!report || report.classId.toString() !== req.params.classId || report.studentId.toString() !== req.params.studentId) {
       return res.status(404).json({ message: 'Report not found' });
-    }
-
-    // Get teacher record for the authenticated user
-    const teacher = await Teacher.findOne({ userId: req.user.id });
-    if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
-    }
-
-    // Verify the teacher owns this report
-    if (report.teacherId.toString() !== teacher._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this report' });
     }
 
     // Validate date range if updating
@@ -157,14 +143,12 @@ router.put('/:classId/:id', authMiddleware, verifyTeacher, async (req, res) => {
       }
     }
 
-    // Don't allow updating teacherId
-    const { teacherId, ...updateData } = req.body;
-    Object.assign(report, updateData);
+    // Update the report fields
+    Object.assign(report, req.body);
     await report.save();
     
     const updatedReport = await Report.findById(report._id)
-      .populate('studentId', 'firstName lastName')
-      .populate('teacherId', 'firstName lastName title');
+      .populate('studentId', 'firstName lastName');
     
     res.json(updatedReport);
   } catch (err) {
@@ -173,24 +157,15 @@ router.put('/:classId/:id', authMiddleware, verifyTeacher, async (req, res) => {
 });
 
 // Delete a report (teachers only)
-router.delete('/:classId/:id', authMiddleware, verifyTeacher, async (req, res) => {
+router.delete('/delete-report/:classId/:id', authMiddleware, verifyTeacher, async (req, res) => {
   try {
     const report = await Report.findById(req.params.id);
     
-    if (!report || report.classId !== req.params.classId) {
+    if (!report || report.classId.toString() !== req.params.classId) {
       return res.status(404).json({ message: 'Report not found' });
     }
 
     // Get teacher record for the authenticated user
-    const teacher = await Teacher.findOne({ userId: req.user.id });
-    if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
-    }
-
-    // Verify the teacher owns this report
-    if (report.teacherId.toString() !== teacher._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this report' });
-    }
     
     await report.deleteOne();
     res.json({ message: 'Report deleted successfully' });

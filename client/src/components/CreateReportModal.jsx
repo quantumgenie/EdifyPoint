@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/CreateReportModal.css';
 
-const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
+const CreateReportModal = ({ isOpen, onClose, onSubmit, report }) => {
   const [formData, setFormData] = useState({
     type: 'Behavioral',
     observedPeriod: {
@@ -11,9 +11,34 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
     details: ''
   });
 
+  useEffect(() => {
+    if (report) {
+      setFormData({
+        type: report.type,
+        observedPeriod: {
+          start: formatDate(report.observedPeriod.start),
+          end: formatDate(report.observedPeriod.end)
+        },
+        details: report.details
+      });
+    } else {
+      // Reset form when creating a new report
+      setFormData({
+        type: 'Behavioral',
+        observedPeriod: {
+          start: '',
+          end: ''
+        },
+        details: ''
+      });
+    }
+    console.log('Report as is passed: ', report);
+    console.log('Report FormData: ', formData);
+  }, [report]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('observedPeriod.')) {
+    if (name.includes('.')) {
       const field = name.split('.')[1];
       setFormData(prev => ({
         ...prev,
@@ -25,14 +50,31 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [e.target.name]: value
       }));
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Validate required fields
+    if (!formData.type || !formData.observedPeriod.start || !formData.observedPeriod.end || !formData.details) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    // Create a copy of formData with properly formatted dates
+    const submissionData = {
+      ...formData,
+      observedPeriod: {
+        start: new Date(formData.observedPeriod.start).toISOString(),
+        end: new Date(formData.observedPeriod.end).toISOString()
+      }
+    };
+    console.log('Report submissionData: ', submissionData);
+    onSubmit(submissionData);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -41,7 +83,7 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
     <div className="modal-overlay">
       <div className="create-report-modal">
         <div className="modal-header">
-          <h2>Create Report</h2>
+          <h2>{report ? 'Edit Report' : 'Create Report'}</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -64,7 +106,7 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
               <input
                 type="date"
                 name="observedPeriod.start"
-                value={formData.observedPeriod.start}
+                value={formData.observedPeriod.start || ''}
                 onChange={handleChange}
                 required
               />
@@ -72,7 +114,7 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
               <input
                 type="date"
                 name="observedPeriod.end"
-                value={formData.observedPeriod.end}
+                value={formData.observedPeriod.end || ''}
                 onChange={handleChange}
                 required
               />
@@ -91,11 +133,20 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit }) => {
             ></textarea>
           </div>
 
-          <button type="submit" className="create-button">Create Report</button>
+          <button type="submit" className="create-button">
+            {report ? 'Save Changes' : 'Create Report'}
+          </button>
         </form>
       </div>
     </div>
   );
+};
+
+// Format date to 'yyyy-MM-dd' form
+const formatDate = (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toISOString().split('T')[0];  
 };
 
 export default CreateReportModal;

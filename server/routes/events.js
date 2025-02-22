@@ -4,7 +4,7 @@ const Event = require('../models/Event');
 const { authMiddleware, verifyTeacher } = require('../middleware/auth');
 
 // Create a new event (teachers only)
-router.post('/create/:classId', authMiddleware, verifyTeacher, async (req, res) => {
+router.post('/create-event/:classId', authMiddleware, verifyTeacher, async (req, res) => {
   try {
     const event = new Event({
       ...req.body,
@@ -52,7 +52,7 @@ router.get('/range', authMiddleware, async (req, res) => {
   }
 });
 
-// Get a specific event
+// Get a specific event by ID
 router.get('/event/:id', authMiddleware, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id)
@@ -69,7 +69,7 @@ router.get('/event/:id', authMiddleware, async (req, res) => {
 });
 
 // Update an event (teachers only)
-router.put('/event/update/:id', authMiddleware, verifyTeacher, async (req, res) => {
+router.put('/update-event/:id', authMiddleware, verifyTeacher, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     
@@ -96,7 +96,7 @@ router.put('/event/update/:id', authMiddleware, verifyTeacher, async (req, res) 
 });
 
 // Delete an event (teachers only)
-router.delete('/:classId/:eventId', authMiddleware, verifyTeacher, async (req, res) => {
+router.delete('/delete-event/:classId/:eventId', authMiddleware, verifyTeacher, async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
     

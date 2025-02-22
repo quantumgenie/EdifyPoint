@@ -22,6 +22,7 @@ const ClassroomDetail = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [studentReports, setStudentReports] = useState([]);
+  const [selectedReport, setSelectedReport] = useState(null);
   const [showCreateReportModal, setShowCreateReportModal] = useState(false);
 
   // Fetch classroom data
@@ -35,7 +36,7 @@ const ClassroomDetail = () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get(
-          `http://localhost:8080/api/classrooms/events/${id}`,
+          `http://localhost:8080/api/classroom/events/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -58,7 +59,7 @@ const ClassroomDetail = () => {
         try {
           const token = localStorage.getItem('token');
           const response = await axios.get(
-            `http://localhost:8080/api/classrooms/reports/${id}/student/${selectedStudent._id}`,
+            `http://localhost:8080/api/classroom/reports/${id}/${selectedStudent._id}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -119,7 +120,7 @@ const ClassroomDetail = () => {
       if (selectedEvent) {
         // Update existing event
         const response = await axios.put(
-          `http://localhost:8080/api/classrooms/events/event/update/${selectedEvent._id}`,
+          `http://localhost:8080/api/classroom/events/update-event/${selectedEvent._id}`,
           eventData,
           {
             headers: { Authorization: `Bearer ${token}` }
@@ -133,7 +134,7 @@ const ClassroomDetail = () => {
       } else {
         // Create new event
         const response = await axios.post(
-          `http://localhost:8080/api/classrooms/events/create/${id}`,
+          `http://localhost:8080/api/classroom/events/create-event/${id}`,
           eventData,
           {
             headers: { Authorization: `Bearer ${token}` }
@@ -162,7 +163,7 @@ const ClassroomDetail = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:8080/api/classrooms/events/${id}/${eventId}`,
+        `http://localhost:8080/api/classroom/events/delete-event/${id}/${eventId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -178,30 +179,57 @@ const ClassroomDetail = () => {
 
   const handleCreateReport = async (reportData) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `http://localhost:8080/api/classrooms/reports/create/${id}/${selectedStudent._id}`,
-        {
-          ...reportData
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      console.log("Report created:", response.data);
+      if (!selectedStudent) {
+        alert('Please select a student first');
+        return;
+      }
 
-      setStudentReports(prevReports => [...prevReports, response.data]);
+      const token = localStorage.getItem('token');
+  
+      if (selectedReport) {
+        // Update existing report
+        const response = await axios.put(
+          `http://localhost:8080/api/classroom/reports/update-report/${id}/${selectedStudent._id}/${selectedReport._id}`,
+          { ...reportData },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        // Update the reports list with the updated report
+        setStudentReports(prevReports =>
+          prevReports.map(report =>
+            report._id === selectedReport._id ? response.data : report
+          )
+        );
+      } else {
+        // Create new report
+        const response = await axios.post(
+          `http://localhost:8080/api/classroom/reports/create-report/${id}/${selectedStudent._id}`,
+          { ...reportData },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        console.log("Report created:", response.data);
+  
+        setStudentReports(prevReports => [...prevReports, response.data]);
+      }
+  
       setShowCreateReportModal(false);
+      setSelectedReport(null);
     } catch (err) {
-      console.error('Error creating report:', err);
+      console.error("Error creating report:", err);
     }
+  };
+  
+  const handleEditReport = (report) => {
+    setSelectedReport(report); 
+    setShowCreateReportModal(true);
   };
 
   const handleDeleteReport = async (reportId) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:8080/api/classrooms/reports/${id}/${reportId}`,
+        `http://localhost:8080/api/classroom/reports/delete-report/${id}/${reportId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -391,15 +419,19 @@ const ClassroomDetail = () => {
                                 })}
                               </div>
                             </div>
-                            <div className="report-teacher">Teacher {report.teacherName}</div>
                             <div className="report-period">
-                              {new Date(report.observedPeriod.start).toLocaleDateString()} to {new Date(report.observedPeriod.end).toLocaleDateString()}
+                              from {new Date(report.observedPeriod.start).toLocaleDateString()} to {new Date(report.observedPeriod.end).toLocaleDateString()}
                             </div>
                             <div className="report-content">
                               <p>{report.details}</p>
                             </div>
                             <div className="report-actions">
-                              <button className="edit-report">Edit</button>
+                              <button 
+                                className="edit-report"
+                                onClick={() => handleEditReport(report)}
+                              >
+                                Edit
+                              </button>
                               <button 
                                 className="delete-report"
                                 onClick={() => handleDeleteReport(report._id)}
@@ -450,8 +482,12 @@ const ClassroomDetail = () => {
 
       <CreateReportModal
         isOpen={showCreateReportModal}
-        onClose={() => setShowCreateReportModal(false)}
+        onClose={() => {
+          setShowCreateReportModal(false);
+          setSelectedReport(null);
+        }}
         onSubmit={handleCreateReport}
+        report={selectedReport}
       />
     </div>
   );
