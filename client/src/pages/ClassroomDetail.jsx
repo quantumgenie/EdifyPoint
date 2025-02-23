@@ -659,23 +659,23 @@ const ClassroomDetail = () => {
       </main>
 
       <EditClassModal
-        show={showEditModal}
+        isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         classroom={classroomData}
         onSave={handleSaveClassroom}
         onStudentsUpdate={handleStudentsUpdate}
       />
       <CreateEventModal
-        show={showCreateEventModal}
+        isOpen={showCreateEventModal}
         onClose={() => {
           setShowCreateEventModal(false);
           setSelectedEvent(null);
         }}
-        onCreate={handleCreateEvent}
+        onSubmit={handleCreateEvent}
         event={selectedEvent}
       />
       <CreateReportModal
-        show={showCreateReportModal}
+        isOpen={showCreateReportModal}
         onClose={() => {
           setShowCreateReportModal(false);
           setSelectedReport(null);
@@ -684,7 +684,7 @@ const ClassroomDetail = () => {
         report={selectedReport}
       />
       <CreateModuleModal
-        open={showCreateModuleModal}
+        isOpen={showCreateModuleModal}
         onClose={() => setShowCreateModuleModal(false)}
         onSubmit={handleCreateModule}
       />
