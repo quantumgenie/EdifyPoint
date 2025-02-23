@@ -53,6 +53,10 @@ input {
   box-sizing: border-box;
 }
 
+textarea {
+  box-sizing: border-box;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

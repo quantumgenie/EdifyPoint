@@ -6,6 +6,7 @@ import EditClassModal from '../components/EditClassModal';
 import CreateEventModal from '../components/CreateEventModal';
 import CreateReportModal from '../components/CreateReportModal';
 import CreateModuleModal from '../components/CreateModuleModal';
+import CreateLessonModal from '../components/CreateLessonModal';
 
 const ClassroomDetail = () => {
   const { id } = useParams();
@@ -30,6 +31,7 @@ const ClassroomDetail = () => {
   const [lessons, setLessons] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
+  const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
 
   // Fetch classroom data
   useEffect(() => {
@@ -102,26 +104,29 @@ const ClassroomDetail = () => {
     }
   }, [id, activeTab]);
 
+  // Fetch lessons for a module
+  const fetchLessonsForModule = async (moduleId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `http://localhost:8080/api/lessons/module/${moduleId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setLessons(response.data);
+    } catch (err) {
+      console.error('Error fetching lessons:', err);
+    }
+  };
+
   // Fetch lessons when a module is selected
   useEffect(() => {
-    const fetchLessons = async () => {
-      if (selectedModule) {
-        try {
-          const token = localStorage.getItem('token');
-          const response = await axios.get(
-            `http://localhost:8080/api/modules/${selectedModule._id}/lessons`,
-            {
-              headers: { Authorization: `Bearer ${token}` }
-            }
-          );
-          setLessons(response.data);
-        } catch (err) {
-          console.error('Error fetching lessons:', err);
-        }
-      }
-    };
-
-    fetchLessons();
+    if (selectedModule) {
+      fetchLessonsForModule(selectedModule._id);
+    } else {
+      setLessons([]);
+    }
   }, [selectedModule]);
 
   const fetchClassroom = async () => {
@@ -315,6 +320,27 @@ const ClassroomDetail = () => {
     }
   };
 
+  const handleCreateLesson = async (lessonData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:8080/api/lessons/${selectedModule._id}`,
+        lessonData,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      // Instead of updating modules, fetch the lessons again
+      await fetchLessonsForModule(selectedModule._id);
+      alert('Lesson created successfully!');
+    } catch (error) {
+      console.error('Error creating lesson:', error);
+      alert('Failed to create lesson');
+    }
+  };
+
+  
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!classroom) return <div className="error">Classroom not found</div>;
@@ -687,6 +713,11 @@ const ClassroomDetail = () => {
         isOpen={showCreateModuleModal}
         onClose={() => setShowCreateModuleModal(false)}
         onSubmit={handleCreateModule}
+      />
+      <CreateLessonModal
+        isOpen={showCreateLessonModal}
+        onClose={() => setShowCreateLessonModal(false)}
+        onSubmit={handleCreateLesson}
       />
     </div>
   );
