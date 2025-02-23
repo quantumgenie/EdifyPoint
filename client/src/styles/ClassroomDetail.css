@@ -156,14 +156,20 @@
   min-height: 160px;
 }
 
-.add-icon {
+.add-student-icon {
   font-size: 2rem;
   color: #666;
   margin-bottom: 0.5rem;
+  background-color: #f6f4f4;
+  border-radius: 50%;
+  border: 2px dashed #ccc;
+  width: 54px;
+  height: 54px;
 }
 
-.add-text {
+.add-student-text {
   color: #666;
+  font-weight: 500;
 }
 
 .settings-container {
@@ -395,7 +401,6 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  /* border-radius: 6px; */
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -562,4 +567,237 @@
   height: 100%;
   color: #666;
   font-size: 16px;
+}
+
+/* Modules Layout */
+.modules-container {
+  display: grid;
+  grid-template-columns: 180px 180px 1fr;
+  height: calc(100vh - 120px);
+  background: #fff;
+}
+
+.modules-list {
+  padding: 15px;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+}
+
+.module-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.module-item:hover {
+  background: #f8f9fa;
+}
+
+.module-item.active {
+  background: #e8f7f1;
+}
+
+.module-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 100%;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+}
+
+.module-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(72, 72, 72);
+}
+
+.module-actions {
+  margin-left: auto;
+  background-color: none;
+  padding: 0;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.module-actions-button {
+  border: none;
+  padding: 0;
+  rotate: 90deg;
+}
+
+.module-item:hover .module-actions {
+  opacity: 1;
+}
+
+/* Lessons List */
+.lessons-list {
+  padding: 15px;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+}
+
+.lesson-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.lesson-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.lesson-item.active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.lesson-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+.lesson-title {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Lesson Content */
+.lesson-content {
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.lesson-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.lesson-content-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.lesson-options {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.lesson-options:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.content-section {
+  margin-bottom: 32px;
+}
+
+.content-section h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.add-new {
+  display: flex;
+  align-items: center;
+  color: #666;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.add-new:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.add-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  margin-right: 12px;
+  margin-bottom: 0px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  
+}
+
+/* Section Headers */
+.modules-list h3,
+.lessons-list h3 {
+  margin: 0 0 15px 0;
+  color: #1a73e8;
+  font-size: 18px;
+}
+
+/* Add new button styles */
+.add-module-button,
+.add-lesson-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1a73e8;
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.add-module-button:hover,
+.add-lesson-button:hover {
+  background: #1557b0;
+  transform: scale(1.05);
 }

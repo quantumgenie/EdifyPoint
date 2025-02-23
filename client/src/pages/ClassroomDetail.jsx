@@ -5,6 +5,7 @@ import '../styles/ClassroomDetail.css';
 import EditClassModal from '../components/EditClassModal';
 import CreateEventModal from '../components/CreateEventModal';
 import CreateReportModal from '../components/CreateReportModal';
+import CreateModuleModal from '../components/CreateModuleModal';
 
 const ClassroomDetail = () => {
   const { id } = useParams();
@@ -24,6 +25,11 @@ const ClassroomDetail = () => {
   const [studentReports, setStudentReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showCreateReportModal, setShowCreateReportModal] = useState(false);
+  const [modules, setModules] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [lessons, setLessons] = useState([]);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
 
   // Fetch classroom data
   useEffect(() => {
@@ -73,6 +79,50 @@ const ClassroomDetail = () => {
 
     fetchStudentReports();
   }, [selectedStudent, id]);
+
+  // Fetch modules data
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(
+          `http://localhost:8080/api/modules/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        setModules(response.data);
+      } catch (err) {
+        console.error('Error fetching modules:', err);
+      }
+    };
+
+    if (activeTab === 'Modules') {
+      fetchModules();
+    }
+  }, [id, activeTab]);
+
+  // Fetch lessons when a module is selected
+  useEffect(() => {
+    const fetchLessons = async () => {
+      if (selectedModule) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(
+            `http://localhost:8080/api/modules/${selectedModule._id}/lessons`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          setLessons(response.data);
+        } catch (err) {
+          console.error('Error fetching lessons:', err);
+        }
+      }
+    };
+
+    fetchLessons();
+  }, [selectedModule]);
 
   const fetchClassroom = async () => {
     try {
@@ -243,6 +293,28 @@ const ClassroomDetail = () => {
     }
   };
 
+  const handleCreateModule = async (moduleData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:8080/api/modules/create`,
+        { ...moduleData, classroomId: id },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      // Add the new module to the list
+      setModules(prevModules => [...prevModules, response.data]);
+      
+      // Select the newly created module
+      setSelectedModule(response.data);
+      setSelectedLesson(null);
+    } catch (err) {
+      console.error('Error creating module:', err);
+    }
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!classroom) return <div className="error">Classroom not found</div>;
@@ -326,8 +398,8 @@ const ClassroomDetail = () => {
               </div>
             ))}
             <div className="add-student-card" onClick={() => setShowEditModal(true)}>
-              <div className="add-icon">+</div>
-              <div className="add-text">Add Student</div>
+              <div className="add-student-icon">+</div>
+              <div className="add-student-text">Add Student</div>
             </div>
           </div>
         )}
@@ -459,35 +531,162 @@ const ClassroomDetail = () => {
             )}
           </div>
         )}
+        {activeTab === 'Modules' && (
+          <div className="modules-container">
+            {/* Modules List */}
+            <div className="modules-list">
+              {modules.map(module => (
+                <div
+                  key={module._id}
+                  className={`module-item ${selectedModule?._id === module._id ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedModule(module);
+                    setSelectedLesson(null);
+                  }}
+                >
+                  <div 
+                    className="module-icon"
+                    style={{ backgroundColor: module.color || '#1a73e8' }}
+                  >
+                    {module.name.charAt(0)}
+                  </div>
+                  <div className="module-name">{module.name}</div>
+                  <div className="module-actions">
+                    <button className="module-actions-button" onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle module options
+                    }}>
+                      •••
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <div className="add-new" onClick={() => setShowCreateModuleModal(true)}>
+                <div className="add-icon">+</div>
+                <span>Add new</span>
+              </div>
+            </div>
+
+            {/* Lessons List */}
+            <div className="lessons-list">
+              {selectedModule ? (
+                <>
+                  {lessons.map((lesson, index) => (
+                    <div
+                      key={lesson._id}
+                      className={`lesson-item ${selectedLesson?._id === lesson._id ? 'active' : ''}`}
+                      onClick={() => setSelectedLesson(lesson)}
+                    >
+                      <div className="lesson-number">{index + 1}</div>
+                      <div className="lesson-title">Lesson {index + 1}</div>
+                    </div>
+                  ))}
+                  <div className="add-new" onClick={() => setShowCreateLessonModal(true)}>
+                    <div className="add-icon">+</div>
+                    <span>Add new</span>
+                  </div>
+                </>
+              ) : (
+                <div className="no-selection-message">
+                  Select a module to view its lessons
+                </div>
+              )}
+            </div>
+
+            {/* Lesson Content */}
+            <div className="lesson-content">
+              {selectedLesson ? (
+                <>
+                  <div className="lesson-content-header">
+                    <h1 className="lesson-content-title">{selectedLesson.name}</h1>
+                    <div className="lesson-options">•••</div>
+                  </div>
+
+                  <div className="content-section">
+                    <h3>Description</h3>
+                    <p>{selectedLesson.description}</p>
+                  </div>
+
+                  {selectedLesson.videoUrl && (
+                    <div className="content-section">
+                      <h3>Video Presentation</h3>
+                      <div className="video-container">
+                        <iframe
+                          src={selectedLesson.videoUrl}
+                          title="Lesson Video"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedLesson.quiz && (
+                    <div className="content-section">
+                      <h3>Practice Quiz</h3>
+                      <div className="quiz-questions">
+                        {selectedLesson.quiz.map((question, index) => (
+                          <div key={index} className="quiz-question">
+                            <p><strong>Q{index + 1}.</strong> {question.text}</p>
+                            <div className="quiz-options">
+                              {question.options.map((option, optIndex) => (
+                                <label key={optIndex} className="quiz-option">
+                                  <input
+                                    type="radio"
+                                    name={`question-${index}`}
+                                    value={option}
+                                  />
+                                  {option}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="no-selection-message">
+                  Select a lesson to view its content
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {/* Other tab contents will be added later */}
       </main>
 
       <EditClassModal
-        isOpen={showEditModal}
+        show={showEditModal}
         onClose={() => setShowEditModal(false)}
         classroom={classroomData}
         onSave={handleSaveClassroom}
         onStudentsUpdate={handleStudentsUpdate}
       />
-
       <CreateEventModal
-        isOpen={showCreateEventModal}
+        show={showCreateEventModal}
         onClose={() => {
           setShowCreateEventModal(false);
           setSelectedEvent(null);
         }}
-        onSubmit={handleCreateEvent}
+        onCreate={handleCreateEvent}
         event={selectedEvent}
       />
-
       <CreateReportModal
-        isOpen={showCreateReportModal}
+        show={showCreateReportModal}
         onClose={() => {
           setShowCreateReportModal(false);
           setSelectedReport(null);
         }}
         onSubmit={handleCreateReport}
         report={selectedReport}
+      />
+      <CreateModuleModal
+        open={showCreateModuleModal}
+        onClose={() => setShowCreateModuleModal(false)}
+        onSubmit={handleCreateModule}
       />
     </div>
   );

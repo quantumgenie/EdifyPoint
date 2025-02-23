@@ -4,9 +4,9 @@ import '../styles/ClassroomCard.css';
 
 const AddClassroomCard = ({ onClick }) => {
   return (
-    <div className="classroom-card add-card" onClick={onClick}>
-      <div className="add-icon">+</div>
-      <h3 className="add-text">Add a classroom</h3>
+    <div className="classroom-card add-classroom-card" onClick={onClick}>
+      <div className="add-classroom-icon">+</div>
+      <h3 className="add-classroom-text">Add a classroom</h3>
     </div>
   );
 };
