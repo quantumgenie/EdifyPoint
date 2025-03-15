@@ -78,10 +78,11 @@ router.delete('/:moduleId', authMiddleware, verifyTeacher, async (req, res) => {
 
     // Delete all lessons associated with this module
     await Lesson.deleteMany({ moduleId: req.params.moduleId });
-    await module.remove();
+    await Module.deleteOne({ _id: req.params.moduleId });
     
     res.json({ message: 'Module deleted' });
   } catch (err) {
+    console.error('Error deleting module:', err);
     res.status(500).json({ message: err.message });
   }
 });

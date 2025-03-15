@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/CreateModuleModal.css';
 
-const CreateModuleModal = ({ isOpen, onClose, onSubmit }) => {
+const CreateModuleModal = ({ isOpen, onClose, onSubmit, module }) => {
   const [formData, setFormData] = useState({
     name: '',
     color: '#1a73e8'
@@ -17,6 +17,17 @@ const CreateModuleModal = ({ isOpen, onClose, onSubmit }) => {
     '#00acc1', // Cyan
     '#ec407a'  // Pink
   ];
+// Update form data when editing a module
+  useEffect(() => {
+    if (module) {
+      setFormData({
+        name: module.name,
+        color: module.color
+      });
+    }
+    console.log('Module as is passed: ', module);
+    console.log('Module FormData: ', formData);
+  }, [module]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,7 +57,7 @@ const CreateModuleModal = ({ isOpen, onClose, onSubmit }) => {
     <div className="modal-overlay">
       <div className="create-module-modal">
         <div className="modal-header">
-          <h2>Module Creator</h2>
+          <h2>{module ? 'Edit Module' : 'Create Module'}</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -83,7 +94,7 @@ const CreateModuleModal = ({ isOpen, onClose, onSubmit }) => {
             className="create-button"
             style={{ backgroundColor: formData.color }}
           >
-            Create Module
+            {module ? 'Update Module' : 'Create Module'}
           </button>
         </form>
       </div>

@@ -32,6 +32,8 @@ const ClassroomDetail = () => {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
   const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
+  const [activeModuleDropdown, setActiveModuleDropdown] = useState(null);
+  const [showEditModuleModal, setShowEditModuleModal] = useState(false);
 
   // Fetch classroom data
   useEffect(() => {
@@ -298,25 +300,47 @@ const ClassroomDetail = () => {
     }
   };
 
-  const handleCreateModule = async (moduleData) => {
+  const handleCreateModule = async (formData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `http://localhost:8080/api/modules/create`,
-        { ...moduleData, classroomId: id },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      
-      // Add the new module to the list
-      setModules(prevModules => [...prevModules, response.data]);
-      
-      // Select the newly created module
-      setSelectedModule(response.data);
-      setSelectedLesson(null);
-    } catch (err) {
-      console.error('Error creating module:', err);
+      if (selectedModule) {
+        // Update existing module
+        const response = await axios.put(
+          `http://localhost:8080/api/modules/${selectedModule._id}`,
+          {
+            name: formData.name,
+            color: formData.color
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        setModules(prevModules => 
+          prevModules.map(module => 
+            module._id === selectedModule._id ? response.data : module
+          )
+        );
+        setSelectedModule(null);
+      } else {
+        // Create new module
+        const response = await axios.post(
+          'http://localhost:8080/api/modules/create',
+          {
+            name: formData.name,
+            color: formData.color,
+            classroomId: classroom._id
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        setModules(prevModules => [...prevModules, response.data]);
+      }
+      setShowCreateModuleModal(false);
+    } catch (error) {
+      console.error('Error creating/updating module:', error);
+      alert(selectedModule ? 'Failed to update module' : 'Failed to create module');
     }
   };
 
@@ -340,7 +364,53 @@ const ClassroomDetail = () => {
     }
   };
 
-  
+  const handleModuleActionClick = (e, moduleId) => {
+    e.stopPropagation();
+    setActiveModuleDropdown(activeModuleDropdown === moduleId ? null : moduleId);
+  };
+
+  const handleDeleteModule = async (moduleId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `http://localhost:8080/api/modules/${moduleId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      setModules(prevModules => prevModules.filter(module => module._id !== moduleId));
+      if (selectedModule?._id === moduleId) {
+        setSelectedModule(null);
+        setLessons([]);
+      }
+      setActiveModuleDropdown(null);
+      alert('Module deleted successfully');
+    } catch (error) {
+      console.error('Error deleting module:', error);
+      alert('Failed to delete module. Please try again.');
+    }
+  };
+
+  const handleEditModule = (e, module) => {
+    e.stopPropagation();
+    setSelectedModule(module);
+    setShowCreateModuleModal(true);
+    setActiveModuleDropdown(null);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveModuleDropdown(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!classroom) return <div className="error">Classroom not found</div>;
@@ -578,12 +648,27 @@ const ClassroomDetail = () => {
                   </div>
                   <div className="module-name">{module.name}</div>
                   <div className="module-actions">
-                    <button className="module-actions-button" onClick={(e) => {
-                      e.stopPropagation();
-                      // Handle module options
-                    }}>
+                    <button 
+                      className="module-actions-button" 
+                      onClick={(e) => handleModuleActionClick(e, module._id)}
+                    >
                       •••
                     </button>
+                    {activeModuleDropdown === module._id && (
+                      <div className="module-dropdown">
+                        <button onClick={(e) => handleEditModule(e, module)}>
+                          Edit
+                        </button>
+                        <button onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this module?')) {
+                            handleDeleteModule(module._id);
+                          }
+                        }}>
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -711,8 +796,12 @@ const ClassroomDetail = () => {
       />
       <CreateModuleModal
         isOpen={showCreateModuleModal}
-        onClose={() => setShowCreateModuleModal(false)}
+        onClose={() => {
+          setShowCreateModuleModal(false);
+          setSelectedModule(null);
+        }}
         onSubmit={handleCreateModule}
+        module={selectedModule}
       />
       <CreateLessonModal
         isOpen={showCreateLessonModal}
