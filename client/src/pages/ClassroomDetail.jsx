@@ -33,7 +33,7 @@ const ClassroomDetail = () => {
   const [showCreateModuleModal, setShowCreateModuleModal] = useState(false);
   const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
   const [activeModuleDropdown, setActiveModuleDropdown] = useState(null);
-  const [showEditModuleModal, setShowEditModuleModal] = useState(false);
+  const [activeLessonDropdown, setActiveLessonDropdown] = useState(null);
 
   // Fetch classroom data
   useEffect(() => {
@@ -344,23 +344,66 @@ const ClassroomDetail = () => {
     }
   };
 
-  const handleCreateLesson = async (lessonData) => {
+  const handleCreateLesson = async (formData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `http://localhost:8080/api/lessons/${selectedModule._id}`,
-        lessonData,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      
-      // Instead of updating modules, fetch the lessons again
-      await fetchLessonsForModule(selectedModule._id);
-      alert('Lesson created successfully!');
+      if (!token) {
+        alert('You must be logged in to create or edit lessons');
+        return;
+      }
+
+      if (selectedLesson) {
+        // Update existing lesson
+        const response = await axios.put(
+          `http://localhost:8080/api/lessons/${selectedLesson._id}`,
+          {
+            name: formData.name,
+            description: formData.description,
+            videoUrl: formData.videoUrl,
+            quiz: formData.quiz
+          },
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        setLessons(prevLessons => 
+          prevLessons.map(lesson => 
+            lesson._id === selectedLesson._id ? response.data : lesson
+          )
+        );
+        setSelectedLesson(response.data);
+      } else {
+        // Create new lesson
+        const response = await axios.post(
+          `http://localhost:8080/api/lessons/${selectedModule._id}`,
+          {
+            name: formData.name,
+            description: formData.description,
+            videoUrl: formData.videoUrl,
+            quiz: formData.quiz
+          },
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        setLessons(prevLessons => [...prevLessons, response.data]);
+        setSelectedLesson(response.data);
+      }
+      setShowCreateLessonModal(false);
     } catch (error) {
-      console.error('Error creating lesson:', error);
-      alert('Failed to create lesson');
+      console.error('Error creating/updating lesson:', error);
+      if (error.response?.status === 401) {
+        alert('You are not authorized to perform this action. Please make sure you are logged in as a teacher.');
+      } else {
+        alert(selectedLesson ? 'Failed to update lesson' : 'Failed to create lesson');
+      }
     }
   };
 
@@ -372,10 +415,18 @@ const ClassroomDetail = () => {
   const handleDeleteModule = async (moduleId) => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        alert('You must be logged in to delete modules');
+        return;
+      }
+
       await axios.delete(
         `http://localhost:8080/api/modules/${moduleId}`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
       );
       
@@ -388,7 +439,11 @@ const ClassroomDetail = () => {
       alert('Module deleted successfully');
     } catch (error) {
       console.error('Error deleting module:', error);
-      alert('Failed to delete module. Please try again.');
+      if (error.response?.status === 401) {
+        alert('You are not authorized to perform this action. Please make sure you are logged in as a teacher.');
+      } else {
+        alert('Failed to delete module. Please try again.');
+      }
     }
   };
 
@@ -399,9 +454,61 @@ const ClassroomDetail = () => {
     setActiveModuleDropdown(null);
   };
 
+  const handleLessonActionClick = (e) => {
+    e.stopPropagation();
+    setActiveLessonDropdown(activeLessonDropdown === selectedLesson._id ? null : selectedLesson._id);
+  };
+
+  const handleDeleteLesson = async (lessonId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('You must be logged in to delete lessons');
+        return;
+      }
+
+      await axios.delete(
+        `http://localhost:8080/api/lessons/${lessonId}`,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      setLessons(prevLessons => prevLessons.filter(lesson => lesson._id !== lessonId));
+      if (selectedLesson?._id === lessonId) {
+        setSelectedLesson(null);
+      }
+      setActiveLessonDropdown(null);
+      alert('Lesson deleted successfully');
+    } catch (error) {
+      console.error('Error deleting lesson:', error);
+      if (error.response?.status === 401) {
+        alert('You are not authorized to perform this action. Please make sure you are logged in as a teacher.');
+      } else {
+        alert('Failed to delete lesson. Please try again.');
+      }
+    }
+  };
+
+  const handleEditLesson = (e, lesson) => {
+    e.stopPropagation();
+    setSelectedLesson(lesson);
+    setShowCreateLessonModal(true);
+    setActiveLessonDropdown(null);
+  };
+
+  const handleLessonClick = (lesson) => {
+    setSelectedLesson(lesson);
+    setActiveLessonDropdown(null);
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
+      setActiveLessonDropdown(null);
       setActiveModuleDropdown(null);
     };
 
@@ -672,7 +779,10 @@ const ClassroomDetail = () => {
                   </div>
                 </div>
               ))}
-              <div className="add-new" onClick={() => setShowCreateModuleModal(true)}>
+              <div className="add-new" onClick={() => {
+                setSelectedModule(null);
+                setShowCreateModuleModal(true);
+              }}>
                 <div className="add-icon">+</div>
                 <span>Add new</span>
               </div>
@@ -685,14 +795,17 @@ const ClassroomDetail = () => {
                   {lessons.map((lesson, index) => (
                     <div
                       key={lesson._id}
-                      className={`lesson-item ${selectedLesson?._id === lesson._id ? 'active' : ''}`}
-                      onClick={() => setSelectedLesson(lesson)}
+                      className={`lesson-item ${selectedLesson?._id === lesson._id ? 'selected' : ''}`}
+                      onClick={() => handleLessonClick(lesson)}
                     >
                       <div className="lesson-number">{index + 1}</div>
                       <div className="lesson-title">Lesson {index + 1}</div>
                     </div>
                   ))}
-                  <div className="add-new" onClick={() => setShowCreateLessonModal(true)}>
+                  <div className="add-new" onClick={() => {
+                    setSelectedLesson(null);
+                    setShowCreateLessonModal(true);
+                  }}>
                     <div className="add-icon">+</div>
                     <span>Add new</span>
                   </div>
@@ -710,53 +823,76 @@ const ClassroomDetail = () => {
                 <>
                   <div className="lesson-content-header">
                     <h1 className="lesson-content-title">{selectedLesson.name}</h1>
-                    <div className="lesson-options">•••</div>
+                    <div className="lesson-actions">
+                      <button 
+                        className="lesson-actions-button" 
+                        onClick={handleLessonActionClick}
+                      >
+                        •••
+                      </button>
+                      {activeLessonDropdown === selectedLesson._id && (
+                        <div className="lesson-dropdown">
+                          <button onClick={(e) => handleEditLesson(e, selectedLesson)}>
+                            Edit
+                          </button>
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('Are you sure you want to delete this lesson?')) {
+                              handleDeleteLesson(selectedLesson._id);
+                            }
+                          }}>
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="content-section">
-                    <h3>Description</h3>
-                    <p>{selectedLesson.description}</p>
-                  </div>
+                    {selectedLesson.description && (
+                      <div className="lesson-description">
+                        {selectedLesson.description}
+                      </div>
+                    )}
 
-                  {selectedLesson.videoUrl && (
-                    <div className="content-section">
-                      <h3>Video Presentation</h3>
+                    {selectedLesson.videoUrl && (
                       <div className="video-container">
                         <iframe
                           src={selectedLesson.videoUrl}
-                          title="Lesson Video"
+                          title={selectedLesson.name}
                           frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
-                        ></iframe>
+                        />
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {selectedLesson.quiz && (
-                    <div className="content-section">
-                      <h3>Practice Quiz</h3>
-                      <div className="quiz-questions">
+                    {selectedLesson.quiz && selectedLesson.quiz.length > 0 && (
+                      <div className="quiz-section">
+                        <h2>Quiz</h2>
                         {selectedLesson.quiz.map((question, index) => (
                           <div key={index} className="quiz-question">
-                            <p><strong>Q{index + 1}.</strong> {question.text}</p>
-                            <div className="quiz-options">
-                              {question.options.map((option, optIndex) => (
-                                <label key={optIndex} className="quiz-option">
+                            <h3>Question {index + 1}: {question.text}</h3>
+                            <div className="options">
+                              {question.options.map((option, optionIndex) => (
+                                <div key={optionIndex} className="option">
                                   <input
                                     type="radio"
+                                    id={`q${index}-o${optionIndex}`}
                                     name={`question-${index}`}
-                                    value={option}
+                                    value={optionIndex}
                                   />
-                                  {option}
-                                </label>
+                                  <label htmlFor={`q${index}-o${optionIndex}`}>
+                                    {option}
+                                  </label>
+                                </div>
                               ))}
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </>
               ) : (
                 <div className="no-selection-message">
@@ -805,8 +941,14 @@ const ClassroomDetail = () => {
       />
       <CreateLessonModal
         isOpen={showCreateLessonModal}
-        onClose={() => setShowCreateLessonModal(false)}
+        onClose={() => {
+          setShowCreateLessonModal(false);
+          if (!selectedLesson?._id) {
+            setSelectedLesson(null);
+          }
+        }}
         onSubmit={handleCreateLesson}
+        lesson={selectedLesson}
       />
     </div>
   );

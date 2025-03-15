@@ -92,10 +92,11 @@ router.delete('/:lessonId', authMiddleware, verifyTeacher, async (req, res) => {
       },
       { $inc: { order: -1 } }
     );
-
-    await lesson.remove();
+    // Delete lesson
+    await Lesson.deleteOne({ _id: req.params.lessonId });
     res.json({ message: 'Lesson deleted' });
   } catch (err) {
+    console.error('Error deleting lesson:', err);
     res.status(500).json({ message: err.message });
   }
 });
