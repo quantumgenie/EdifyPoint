@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Home from './pages/Home'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import Dashboard from './pages/Dashboard'
+import TeacherDashboard from './pages/TeacherDashboard'
 import CreateLesson from './pages/CreateLesson'
 import CreateReport from './pages/CreateReport'
 import ViewLessons from './pages/ViewLessons'
@@ -28,7 +28,7 @@ function App() {
           <Route path="/signup" element={<SignUp />}/>
           {/* protected route */}
           <Route element={<ProtectedRoute/>}>
-            <Route path="/dashboard" element={<Dashboard />}/>
+            <Route path="/dashboard" element={<TeacherDashboard />}/>
           </Route>
           <Route path="/create-lesson" element={<CreateLesson />} />
           <Route path="/create-report" element={<CreateReport />} />
