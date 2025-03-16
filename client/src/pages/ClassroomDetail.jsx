@@ -566,7 +566,7 @@ const ClassroomDetail = () => {
       <nav className="classroom-nav">
         <ul>
           <li className="back-to-classes">
-            <button onClick={() => navigate('/dashboard')} className="back-button">
+            <button onClick={() => navigate('/teacher/dashboard')} className="back-button">
               ← Back to classes
             </button>
           </li>

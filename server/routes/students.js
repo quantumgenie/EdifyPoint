@@ -15,9 +15,9 @@ router.post('/', authMiddleware, verifyTeacher, async (req, res) => {
 });
 
 // Get all students in a class
-router.get('/class/:classId', authMiddleware, async (req, res) => {
+router.get('/class/:classroomId', authMiddleware, async (req, res) => {
   try {
-    const students = await Student.find({ classId: req.params.classId })
+    const students = await Student.find({ classroomId: req.params.classroomId })
       .populate('parentId', 'firstName lastName email')
       .sort({ lastName: 1, firstName: 1 });
     res.json(students);
@@ -30,7 +30,7 @@ router.get('/class/:classId', authMiddleware, async (req, res) => {
 router.get('/parent', authMiddleware, async (req, res) => {
   try {
     const students = await Student.find({ parentId: req.user.id })
-      .populate('classId', 'name school')
+      .populate('classroomId', 'name school')
       .sort({ lastName: 1, firstName: 1 });
     res.json(students);
   } catch (err) {
@@ -42,7 +42,7 @@ router.get('/parent', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id)
-      .populate('classId', 'name school')
+      .populate('classroomId', 'name school')
       .populate('parentId', 'firstName lastName email');
     
     if (!student) {

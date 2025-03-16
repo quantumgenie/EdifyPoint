@@ -10,12 +10,12 @@ const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedClassroom, setSelectedClassroom] = useState(null);
 
   // Get user info from localStorage
-  const userRole = localStorage.getItem('userRole');
   const userName = localStorage.getItem('userName');
   const token = localStorage.getItem('token');
 
@@ -65,32 +65,8 @@ const TeacherDashboard = () => {
         setClassrooms(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Detailed error:', err);
-        
-        if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error('Error response:', err.response.data);
-          console.error('Error status:', err.response.status);
-          
-          if (err.response.status === 401) {
-            setLoading(false);
-            localStorage.clear();
-            navigate('/login');
-          } else if (err.response.status === 403) {
-            setLoading(false);
-          } else {
-            setLoading(false);
-          }
-        } else if (err.request) {
-          // The request was made but no response was received
-          console.error('No response received:', err.request);
-          setLoading(false);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error('Error setting up request:', err.message);
-          setLoading(false);
-        }
+        setError(err.response?.data?.message || 'Failed to fetch classrooms');
+        setLoading(false);
       }
     };
 
@@ -201,11 +177,27 @@ const TeacherDashboard = () => {
   };
 
   if (loading) {
-    return <div className="loading-message">Loading...</div>;
+    return (
+      <div className="teacher-dashboard loading">
+        <div className="loader"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="teacher-dashboard error">
+        <div className="error-message">
+          <h3>Error</h3>
+          <p>{error}</p>
+          <button onClick={fetchClassrooms}>Try Again</button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="dashboard">
+    <div className="teacher-dashboard">
       {/* Header */}
       <header className="dashboard-header">
         <div className="logo">
@@ -216,7 +208,7 @@ const TeacherDashboard = () => {
           <h3 className="dashboard-title">My Classrooms</h3>
         </div>
         <div className="user-name">
-          Mr. Parker <span>▼</span>
+          {userName} <span>▼</span>
         </div>
       </header>
 
@@ -244,7 +236,7 @@ const TeacherDashboard = () => {
         
         {classrooms.length === 0 && (
           <p className="no-classrooms-message">
-            You haven't created any classrooms yet. Click the "Add a class" card to get started!
+            You haven't created any classrooms yet. Click the "Add a classroom" card to get started!
           </p>
         )}
       </main>

@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import TeacherDashboard from './pages/TeacherDashboard'
+import ParentDashboard from './pages/ParentDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import ClassroomDetail from './pages/ClassroomDetail'
 
@@ -21,7 +22,8 @@ function App() {
         
         {/* protected routes */}
         <Route element={<ProtectedRoute/>}>
-          <Route path="/dashboard" element={<TeacherDashboard />}/>
+          <Route path="/teacher/dashboard" element={<TeacherDashboard />}/>
+          <Route path="/parent/dashboard" element={<ParentDashboard />}/>
           <Route path="/classroom/:id" element={<ClassroomDetail />} />
         </Route>
 

@@ -26,12 +26,18 @@ const Login = () => {
     try {
       const response = await axios.post('http://localhost:8080/api/auth/login', formData);
       
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userRole', response.data.user.role);
-      localStorage.setItem('userName', `${response.data.user.firstName} ${response.data.user.lastName}`);
-      localStorage.setItem('userId', response.data.user.id);
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+      localStorage.setItem('userId', user.id);
       
-      navigate('/dashboard');
+      // Redirect based on user role
+      if (user.role === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else if (user.role === 'parent') {
+        navigate('/parent/dashboard');
+      }
     } catch (err) {
       console.error('Login error:', err);
       setError(err.response?.data?.message || 'An error occurred during login. Please try again.');
