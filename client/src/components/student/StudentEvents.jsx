@@ -19,12 +19,12 @@ const StudentEvents = ({ student }) => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch events and reports in parallel
-      const eventsRes = await Promise.all([
-        axios.get(`http://localhost:8080/api/events/${student.classroomId._id}`, { headers })
-      ]);
+      const response = await axios.get(
+        `http://localhost:8080/api/classroom/events/${student.classroomId._id}`,
+        { headers }
+      );
 
-      setEvents(eventsRes.data);
+      setEvents(response.data);
       setLoading(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch events');
@@ -41,8 +41,30 @@ const StudentEvents = ({ student }) => {
   }
 
   return (
-    <div className="student-events">
-      <h2>Events</h2>
+    <div className="student-events-container">
+      <div className="events-list">
+        {events.map(event => (
+          <div key={event._id} className="event-card">
+            <div className={`event-date ${event.theme}`}>
+              {new Date(event.date).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              }).toUpperCase()}
+            </div>
+            <div className="event-content">
+              <h3 className="event-title">{event.title}</h3>
+              <div className="event-time">
+                {event.startTime} - {event.endTime}
+              </div>
+              <div className="event-details">
+                <h4>Event Details:</h4>
+                <p>{event.details}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
