@@ -658,7 +658,7 @@ const ClassroomDetail = () => {
             )}
             {activeSubTab === 'Reports' && (
               <div className="reports-container">
-                <div className="students-list">
+                <div className="reports-students-list">
                   <h3>Students</h3>
                   {classroom.students.map(student => (
                     <div

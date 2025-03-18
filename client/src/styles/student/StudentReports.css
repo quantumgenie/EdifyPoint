@@ -1,13 +1,19 @@
-.student-reports {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+.student-reports-container {
+  display: flex;
+  gap: 1rem;
+  padding-inline: 30%;
 }
 
-.student-reports h2 {
-  color: #2d3748;
-  margin: 0 0 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
+.student-reports-list {
+  /* border-style: none; */
+  flex: 1;
+}
+
+.no-reports {
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  color: #64748b;
+  font-style: italic;
 }
