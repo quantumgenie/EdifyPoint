@@ -10,6 +10,7 @@ import TeacherDashboard from './pages/TeacherDashboard'
 import ParentDashboard from './pages/ParentDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import ClassroomDetail from './pages/ClassroomDetail'
+import StudentDetail from './pages/StudentDetail'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/teacher/dashboard" element={<TeacherDashboard />}/>
           <Route path="/parent/dashboard" element={<ParentDashboard />}/>
           <Route path="/classroom/:id" element={<ClassroomDetail />} />
+          <Route path="/student/:studentId" element={<StudentDetail />} />
         </Route>
 
         {/* fallback route */}

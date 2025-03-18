@@ -1,0 +1,10 @@
+.student-modules {
+  padding: 1rem 0;
+}
+
+.student-modules h2 {
+  color: #2d3748;
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}

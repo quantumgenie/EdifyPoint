@@ -1,0 +1,6 @@
+.student-messages {
+  height: calc(100vh - 300px);
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}

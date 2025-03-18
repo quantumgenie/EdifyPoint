@@ -69,7 +69,7 @@ const ParentDashboard = () => {
           {userName} <span>▼</span>
         </div>
       </header>
-{/* Main Content */}
+     {/* Main Content */}
       <main className="dashboard-content">
         <div className="students-grid">
           {students.map(student => (

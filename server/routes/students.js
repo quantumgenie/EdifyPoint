@@ -50,13 +50,23 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
 
     // Check if user is authorized to view this student
-    if (req.user.role === 'parent' && 
-        student.parentId?.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to view this student' });
+    console.log('User role:', req.user.role);
+    console.log('Student parentId:', student.parentId?._id);
+    console.log('User id:', req.user.id);
+
+    if (req.user.role === 'parent') {
+      // For parents, check if they are the student's parent
+      if (!student.parentId || student.parentId._id.toString() !== req.user.id) {
+        return res.status(403).json({ message: 'Not authorized to view this student' });
+      }
+    } else if (req.user.role === 'teacher') {
+      // For teachers, we could add additional checks here if needed
+      // For now, all teachers can view student details
     }
 
     res.json(student);
   } catch (err) {
+    console.error('Error in /students/:id:', err);
     res.status(500).json({ message: err.message });
   }
 });
