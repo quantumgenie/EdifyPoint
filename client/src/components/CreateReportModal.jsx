@@ -32,8 +32,6 @@ const CreateReportModal = ({ isOpen, onClose, onSubmit, report }) => {
         details: ''
       });
     }
-    console.log('Report as is passed: ', report);
-    console.log('Report FormData: ', formData);
   }, [report]);
 
   const handleChange = (e) => {

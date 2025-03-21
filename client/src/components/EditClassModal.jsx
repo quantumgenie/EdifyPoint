@@ -3,10 +3,11 @@ import '../styles/EditClassModal.css';
 import axios from 'axios';
 
 const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }) => {
+  console.log('classroomData:', classroom);
   const [activeTab, setActiveTab] = useState('Class Details');
   const [formData, setFormData] = useState({
-    name: classroom.name,
-    school: classroom.school
+    name: classroom?.name || '',
+    school: classroom?.school || ''
   });
   const [studentInput, setStudentInput] = useState('');
   const [newStudents, setNewStudents] = useState([]);
@@ -17,7 +18,6 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
   const [lastRemovedStudent, setLastRemovedStudent] = useState(null);
   const [parents, setParents] = useState([]);
   const [studentParents, setStudentParents] = useState({});
-  const [loadingParents, setLoadingParents] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState({});
   const dropdownRefs = useRef({});
@@ -47,11 +47,10 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
   const fetchUpdatedClassroom = async () => {
     try {
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(
         `http://localhost:8080/api/classrooms/${classroom._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
       setLocalStudents(response.data.students);
       if (onStudentsUpdate) {
@@ -88,11 +87,10 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       setError('');
       
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       await axios.delete(
         `http://localhost:8080/api/classrooms/${classroom._id}/students/${studentId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
 
       setLastRemovedStudent({
@@ -120,12 +118,11 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       setError('');
       
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       await axios.post(
         `http://localhost:8080/api/classrooms/${classroom._id}/students/restore`,
         { student: lastRemovedStudent.fullData },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
 
       setSuccessMessage(`${lastRemovedStudent.firstName} ${lastRemovedStudent.lastName} was restored successfully`);
@@ -144,6 +141,7 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       setLoading(true);
       setError('');
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       
       if (activeTab === 'Students' && newStudents.length > 0) {
         await axios.put(
@@ -151,14 +149,12 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
           {
             newStudents: newStudents.map(student => student.name)
           },
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+          { headers }
         );
         setSuccessMessage('Students added successfully');
-        setStudentInput(''); // Clear the input
-        setNewStudents([]); // Clear the preview
-        await fetchUpdatedClassroom(); // Refresh the students list
+        setStudentInput(''); 
+        setNewStudents([]);
+        await fetchUpdatedClassroom();
       } else if (activeTab === 'Class Details') {
         await onSave(formData);
         setSuccessMessage('Class details updated successfully');
@@ -189,11 +185,10 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
   const fetchStudentParents = async () => {
     try {
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(
         `http://localhost:8080/api/classrooms/${classroom._id}/students/parents`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
       
       // Create a map of studentId -> parentId
@@ -221,18 +216,12 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
 
   const fetchParents = async () => {
     try {
-      setLoadingParents(true);
       const token = localStorage.getItem('token');
-      console.log('Fetching parents...'); // Debug log
-      
+      const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(
         'http://localhost:8080/api/parents',
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
-      
-      console.log('Parents response:', response.data); // Debug log
       
       const sortedParents = response.data.sort((a, b) => {
         const lastNameCompare = a.lastName.localeCompare(b.lastName);
@@ -243,18 +232,14 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       });
       
       setParents(sortedParents);
-      console.log('Sorted parents:', sortedParents); // Debug log
     } catch (err) {
       console.error('Error fetching parents:', err);
       setError('Failed to load parents');
-    } finally {
-      setLoadingParents(false);
     }
   };
 
   // Add this useEffect to log when parents state changes
   useEffect(() => {
-    console.log('Parents state updated:', parents);
   }, [parents]);
 
   // Add click outside handler
@@ -288,12 +273,11 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       setSuccessMessage(''); // Clear any existing message
       
       const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
       await axios.put(
         `http://localhost:8080/api/students/${studentId}/parent`,
         { parentId: parent._id },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
       
       setStudentParents(prev => ({
@@ -331,7 +315,7 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       setSuccessMessage(''); // Clear any existing message
       
       const token = localStorage.getItem('token');
-      
+      const headers = { Authorization: `Bearer ${token}` };
       // Store the current relationship for potential undo
       const currentParentId = studentParents[studentId];
       const student = localStudents.find(s => s._id === studentId);
@@ -346,9 +330,7 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
 
       await axios.delete(
         `http://localhost:8080/api/students/${studentId}/parent`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
 
       setStudentParents(prev => {
@@ -376,13 +358,11 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
       setSuccessMessage(''); // Clear any existing message
       
       const token = localStorage.getItem('token');
-      
+      const headers = { Authorization: `Bearer ${token}` };
       await axios.put(
         `http://localhost:8080/api/students/${lastRemovedParentLink.studentId}/parent`,
         { parentId: lastRemovedParentLink.parentId },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers }
       );
 
       setStudentParents(prev => ({
@@ -425,7 +405,7 @@ const EditClassModal = ({ isOpen, onClose, classroom, onSave, onStudentsUpdate }
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>{classroom.name}</h2>
+          <h2>{classroom?.name || ''}</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
 

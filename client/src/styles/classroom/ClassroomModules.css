@@ -1,0 +1,322 @@
+/* Modules Layout */
+.modules-container {
+    display: grid;
+    grid-template-columns: 180px 180px 1fr;
+    height: calc(100vh - 120px);
+    background: #fff;
+  }
+  
+  .modules-list {
+    padding: 15px;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+  }
+  
+  .module-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .module-item:hover {
+    background: #f8f9fa;
+  }
+  
+  .module-item.active {
+    background: #e8f7f1;
+  }
+  
+  .module-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 100%;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+  }
+  
+  .module-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgb(72, 72, 72);
+  }
+  
+  .module-actions {
+    position: relative;
+    margin-left: auto;
+    background-color: none;
+    padding: 0;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+  }
+  
+  .module-actions-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px 5px;
+    border-radius: 4px;
+    rotate: 90deg;
+  }
+  
+  .module-actions-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .module-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 120px;
+  }
+  
+  .module-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .module-dropdown button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .module-dropdown button:not(:last-child) {
+    border-bottom: 1px solid #eee;
+  }
+  
+  .module-item:hover .module-actions {
+    opacity: 1;
+  }
+  
+  /* Lessons List */
+  .lessons-list {
+    padding: 15px;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+  }
+  
+  .lesson-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .lesson-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  .lesson-item.active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  .lesson-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .lesson-title {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  /* Lesson Content */
+  .lesson-content {
+    padding: 15px;
+    overflow-y: auto;
+  }
+  
+  .lesson-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .lesson-content-title {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+  }
+  
+  .lesson-actions {
+    position: relative;
+  }
+  
+  .lesson-actions-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 18px;
+  }
+  
+  .lesson-actions-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  .lesson-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 120px;
+  }
+  
+  .lesson-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .lesson-dropdown button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .lesson-dropdown button:not(:last-child) {
+    border-bottom: 1px solid #eee;
+  }
+  
+  .content-section {
+    margin-bottom: 32px;
+  }
+  
+  .content-section h3 {
+    font-size: 18px;
+    color: #333;
+    margin: 0 0 16px 0;
+  }
+  
+  .video-container {
+    margin: 20px 0;
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+  
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+  
+  .lesson-details {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+  
+  .lesson-details p {
+    margin: 0 0 15px 0;
+    line-height: 1.5;
+  }
+  
+  .add-new {
+    display: flex;
+    align-items: center;
+    color: #666;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .add-new:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  .add-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    margin-right: 12px;
+    margin-bottom: 0px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    
+  }
+  
+  /* Section Headers */
+  .modules-list h3,
+  .lessons-list h3 {
+    margin: 0 0 15px 0;
+    color: #1a73e8;
+    font-size: 18px;
+  }
+  
+  /* Add new button styles */
+  .add-module-button,
+  .add-lesson-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .add-module-button:hover,
+  .add-lesson-button:hover {
+    background: #1557b0;
+    transform: scale(1.05);
+  }

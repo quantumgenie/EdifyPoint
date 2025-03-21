@@ -25,8 +25,6 @@ const CreateModuleModal = ({ isOpen, onClose, onSubmit, module }) => {
         color: module.color
       });
     }
-    console.log('Module as is passed: ', module);
-    console.log('Module FormData: ', formData);
   }, [module]);
 
   const handleChange = (e) => {

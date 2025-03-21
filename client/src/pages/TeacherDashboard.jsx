@@ -23,7 +23,7 @@ const TeacherDashboard = () => {
     const verifyAuth = async () => {
       try {
         if (!token) {
-          console.log('No token found, redirecting to login');
+          console.error('No token found, redirecting to login');
           navigate('/login');
           return;
         }
@@ -51,17 +51,13 @@ const TeacherDashboard = () => {
     const fetchClassrooms = async () => {
       try {
         if (!token) {
-          console.log('No token found, redirecting to login');
+          console.error('No token found, redirecting to login');
           navigate('/login');
           return;
         }
-
-        console.log('Fetching classrooms...');
         const response = await axios.get('http://localhost:8080/api/classrooms/teacher', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
-        console.log('Response received:', response.data);
         setClassrooms(response.data);
         setLoading(false);
       } catch (err) {
