@@ -65,7 +65,7 @@ const StudentDetail = () => {
       </div>
     );
   }
-
+  console.log("Student in StudentDetail:", student);
   return (
     <div className="student-detail">
       <header className="student-header">

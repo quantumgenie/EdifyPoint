@@ -49,10 +49,18 @@ const ClassroomDetail = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(
-        `http://localhost:8080/api/classrooms/${id}`, 
+        `http://localhost:8080/api/classrooms/${id}/details`, 
         { headers }
       );
-      setClassroom(response.data);
+
+      // Ensure we have the teacher data in the correct format
+      const classroomData = response.data;
+      if (!classroomData.teacher && classroomData.teacherId) {
+        classroomData.teacher = classroomData.teacherId;
+        delete classroomData.teacherId;
+      }
+
+      setClassroom(classroomData);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching classroom:', err);

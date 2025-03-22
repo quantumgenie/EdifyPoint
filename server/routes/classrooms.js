@@ -54,22 +54,56 @@ router.get('/teacher', authMiddleware, verifyTeacher, async (req, res) => {
   }
 });
 
-// Get a specific classroom by ID
-router.get('/:id', authMiddleware, verifyTeacher, async (req, res) => {
-  try {
-    const classroom = await Classroom.findById(req.params.id)
-      .populate('students')
-      .exec();
-    
-    if (!classroom) {
-      return res.status(404).json({ message: 'Classroom not found' });
-    }
+// Get a single classroom with populated data for messaging
+router.get('/:id', authMiddleware, async (req, res) => {
+    try {
+        const classroom = await Classroom.findById(req.params.id)
+            .populate('teacherId', '_id firstName lastName')
+            .populate({
+                path: 'students',
+                populate: {
+                    path: 'parent',
+                    select: '_id firstName lastName'
+                }
+            });
 
-    res.json(classroom);
-  } catch (err) {
-    console.error('Error fetching classroom:', err);
-    res.status(500).json({ message: 'Error fetching classroom', error: err.message });
-  }
+        if (!classroom) {
+            return res.status(404).json({ message: 'Classroom not found' });
+        }
+
+        // Transform teacherId to teacher for frontend consistency
+        const responseData = classroom.toObject();
+        responseData.teacher = responseData.teacherId;
+        delete responseData.teacherId;
+
+        res.json(responseData);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get a specific classroom by ID with detailed data
+router.get('/:id/details', authMiddleware, verifyTeacher, async (req, res) => {
+    try {
+        const classroom = await Classroom.findById(req.params.id)
+            .populate('students')
+            .populate('teacherId', '_id firstName lastName')
+            .exec();
+        
+        if (!classroom) {
+            return res.status(404).json({ message: 'Classroom not found' });
+        }
+
+        // Transform teacherId to teacher for frontend consistency
+        const responseData = classroom.toObject();
+        responseData.teacher = responseData.teacherId;
+        delete responseData.teacherId;
+
+        res.json(responseData);
+    } catch (err) {
+        console.error('Error fetching classroom:', err);
+        res.status(500).json({ message: 'Error fetching classroom', error: err.message });
+    }
 });
 
 // Update a classroom (teachers only)
