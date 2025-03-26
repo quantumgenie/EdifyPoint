@@ -7,12 +7,7 @@ const { authMiddleware } = require('../middleware/auth');
 router.get('/classroom/:classroomId', authMiddleware, async (req, res) => {
     try {
         const messages = await Message.find({
-            classroom: req.params.classroomId,
-            $or: [
-                { receiver: req.user._id },
-                { sender: req.user._id },
-                { isGroupMessage: true }
-            ]
+            classroom: req.params.classroomId
         }).sort({ createdAt: 1 });
         res.json(messages);
     } catch (error) {

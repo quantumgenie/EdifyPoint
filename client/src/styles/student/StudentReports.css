@@ -1,6 +1,6 @@
 .student-reports-container {
   display: flex;
-  gap: 1rem;
+  margin-top: 1rem;
   padding-inline: 30%;
 }
 

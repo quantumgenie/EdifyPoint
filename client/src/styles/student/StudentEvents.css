@@ -1,7 +1,12 @@
+.student-events-container {
+  margin-top: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
 .student-events {
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 

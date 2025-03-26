@@ -8,6 +8,7 @@ const ClassroomMessages = ({ classroom }) => {
     const [messages, setMessages] = useState([]);  
     const [newMessage, setNewMessage] = useState('');
     const [selectedParent, setSelectedParent] = useState(null);
+    const [selectedStudent, setSelectedStudent] = useState(null);
     const [isGroupChat, setIsGroupChat] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,6 +22,8 @@ const ClassroomMessages = ({ classroom }) => {
         lastName: classroom.teacherId.lastName
     });
 
+    console.log('classroom.students:', classroom.students);
+    
     useEffect(() => {
         if (!teacher) {
             setLoading(false);
@@ -59,6 +62,7 @@ const ClassroomMessages = ({ classroom }) => {
                 { headers }
             );
             setMessages(Array.isArray(response.data) ? response.data : []);
+            console.log('Fetched messages:', response.data);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching messages:', error);
@@ -76,12 +80,12 @@ const ClassroomMessages = ({ classroom }) => {
             content: newMessage,
             sender: teacher._id,
             senderType: 'Teacher',
-            receiver: isGroupChat ? classroom._id : selectedParent._id,
+            receiver: isGroupChat ? classroom._id : selectedParent,
             receiverType: isGroupChat ? 'Group' : 'Parent',
             classroom: classroom._id,
             isGroupMessage: isGroupChat
         };
-
+        console.log('Sending message:', messageData);
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         try {
@@ -99,7 +103,7 @@ const ClassroomMessages = ({ classroom }) => {
     };
 
     if (loading) {
-        return <div className="loader">Loading messages...</div>;
+        return <div className="loader"></div>;
     }
 
     if (error) {
@@ -112,70 +116,84 @@ const ClassroomMessages = ({ classroom }) => {
 
     return (
         <div className="messages-container">
-            <div className="messages-header">
-                <h2>Messages</h2>
-                <div className="chat-controls">
-                    <button 
-                        className={`chat-type-btn ${isGroupChat ? 'active' : ''}`}
-                        onClick={() => setIsGroupChat(true)}
-                    >
-                        Group Chat
-                    </button>
-                    <button 
-                        className={`chat-type-btn ${!isGroupChat ? 'active' : ''}`}
-                        onClick={() => setIsGroupChat(false)}
-                    >
-                        Private Chat
-                    </button>
-                </div>
-            </div>
-
-            {!isGroupChat && classroom.students && classroom.students.length > 0 && (
-                <div className="parents-list">
-                    {classroom.students
-                        .filter(student => student.parent)
-                        .map(student => (
-                            <div
-                                key={student._id}
-                                className={`parent-item ${selectedParent?._id === student.parent._id ? 'selected' : ''}`}
-                                onClick={() => setSelectedParent(student.parent)}
-                            >
-                                {student.parent.firstName} {student.parent.lastName}
-                            </div>
-                        ))}
-                </div>
-            )}
-
-            <div className="messages-list">
-                {(Array.isArray(messages) ? messages : []).filter(msg => 
-                    isGroupChat ? msg.isGroupMessage : 
-                    (msg.sender === selectedParent?._id || msg.receiver === selectedParent?._id)
-                ).map((message, index) => (
-                    <div 
-                        key={index}
-                        className={`message ${message.sender === teacher._id ? 'sent' : 'received'}`}
-                    >
-                        <div className="message-content">{message.content}</div>
-                        <div className="message-time">
-                            {new Date(message.createdAt).toLocaleTimeString()}
-                        </div>
+            <div className="parents-sidebar">
+                <div className="all-parents-item" onClick={() => setIsGroupChat(true)}>
+                    <div className="parent-avatar">
+                        <img src="/group-icon.svg" alt="All Parents" />
                     </div>
-                ))}
-                <div ref={messagesEndRef} />
+                    <span>All Parents</span>
+                </div>
+                {classroom.students
+                    .filter(student => student.parentId)
+                    .map(student => (
+                        <div
+                            key={student._id}
+                            className={`parent-item ${(!isGroupChat && selectedParent?._id === student.parentId) ? 'selected' : ''}`}
+                            onClick={() => {
+                                setSelectedParent(student.parentId);
+                                setSelectedStudent(student);
+                                setIsGroupChat(false);
+                            }}
+                        >
+                            <div className="parent-avatar">
+                                <img src="/parent-icon.svg" alt="Parent avatar" />
+                            </div>
+                            <span>{student.firstName} {student.lastName}'s Parent</span>
+                        </div>
+                    ))}
             </div>
+            
+            <div className="chat-section">
+                <div className="chat-header">
+                    {isGroupChat ? 'All Parents' : selectedParent ? `DM ${selectedStudent.firstName} ${selectedStudent.lastName}'s Parent` : 'Select a parent to start messaging'}
+                </div>
 
-            <form onSubmit={handleSendMessage} className="message-input-form">
-                <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    disabled={!isGroupChat && !selectedParent}
-                />
-                <button type="submit" disabled={!isGroupChat && !selectedParent}>
-                    Send
-                </button>
-            </form>
+                <div className="messages-list">
+                    {(Array.isArray(messages) ? messages : []).filter(msg => 
+                        isGroupChat ? msg.isGroupMessage : 
+                        (!msg.isGroupMessage && 
+                        (msg.sender === selectedParent || msg.receiver === selectedParent))
+                    ).map((message, index) => (
+                        <div 
+                            key={index}
+                            className={`message-row ${message.sender === teacher._id ? 'sent' : 'received'}`}
+                        >
+                            {message.sender !== teacher._id && (
+                                <div className="message-avatar">
+                                    <img src="/parent-icon.svg" alt="Parent avatar" />
+                                </div>
+                            )}
+                            <div className="message-bubble">
+                                <div className="message-content">{message.content}</div>
+                                <div className="message-time">
+                                    {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                            </div>
+                            {message.sender === teacher._id && (
+                                <div className="message-avatar">
+                                    <img src="/teacher-icon.svg" alt="Teacher avatar" />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <form onSubmit={handleSendMessage} className="message-input-form">
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        disabled={!isGroupChat && !selectedParent}
+                    />
+                    <button type="submit" disabled={!isGroupChat && !selectedParent} className="send-button">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

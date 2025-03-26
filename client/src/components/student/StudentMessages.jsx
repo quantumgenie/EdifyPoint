@@ -91,7 +91,7 @@ const StudentMessages = ({ student }) => {
   };
 
   if (loading) {
-    return <div className="loader">Loading messages...</div>;
+    return <div className="loader"></div>;
   }
 
   if (error) {
@@ -104,50 +104,69 @@ const StudentMessages = ({ student }) => {
 
   return (
     <div className="messages-container">
-      <div className="messages-header">
-        <h2>{isGroupChat ? 'Class Discussion' : 'Direct Messages with Teacher'}</h2>
-        <div className="message-type-toggle">
-          <button 
-            className={!isGroupChat ? 'active' : ''} 
-            onClick={() => setIsGroupChat(false)}
-          >
-            Direct Messages
-          </button>
-          <button 
-            className={isGroupChat ? 'active' : ''} 
-            onClick={() => setIsGroupChat(true)}
-          >
-            Class Messages
-          </button>
+      <div className="chat-options-sidebar">
+        <div className={`chat-option-item ${!isGroupChat ? 'selected' : ''}`} onClick={() => setIsGroupChat(false)}>
+          <div className="chat-option-avatar">
+            <img src="/teacher-icon.svg" alt="Teacher" />
+          </div>
+          <span>Teacher Messages</span>
+        </div>
+        <div className={`chat-option-item ${isGroupChat ? 'selected' : ''}`} onClick={() => setIsGroupChat(true)}>
+          <div className="chat-option-avatar">
+            <img src="/group-icon.svg" alt="Class Discussion" />
+          </div>
+          <span>Class Discussion</span>
         </div>
       </div>
 
-      <div className="messages-list">
-        {(Array.isArray(messages) ? messages : [])
-          .filter(msg => msg.isGroupMessage === isGroupChat)
-          .map((message, index) => (
-            <div
-              key={index}
-              className={`message ${message.sender === student.parentId._id ? 'sent' : 'received'}`}
-            >
-              <div className="message-content">{message.content}</div>
-              <div className="message-time">
-                {new Date(message.createdAt).toLocaleTimeString()}
-              </div>
-            </div>
-          ))}
-        <div ref={messagesEndRef} />
-      </div>
+      <div className="chat-section">
+        <div className="chat-header">
+          {isGroupChat ? 'Class Discussion' : 'Direct Messages with Teacher'}
+        </div>
 
-      <form onSubmit={handleSendMessage} className="message-input-form">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder={`Type your ${isGroupChat ? 'class' : ''} message...`}
-        />
-        <button type="submit">Send</button>
-      </form>
+        <div className="messages-list">
+          {(Array.isArray(messages) ? messages : [])
+            .filter(msg => msg.isGroupMessage === isGroupChat)
+            .map((message, index) => (
+              <div
+                key={index}
+                className={`message-row ${message.sender === student.parentId._id ? 'sent' : 'received'}`}
+              >
+                {message.sender !== student.parentId._id && (
+                  <div className="message-avatar">
+                    <img src={message.senderType === 'Teacher' ? '/teacher-icon.svg' : '/parent-icon.svg'} alt={`${message.senderType} avatar`} />
+                  </div>
+                )}
+                <div className="message-bubble">
+                  <div className="message-content">{message.content}</div>
+                  <div className="message-time">
+                    {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+                {message.sender === student.parentId._id && (
+                  <div className="message-avatar">
+                    <img src="/parent-icon.svg" alt="Your avatar" />
+                  </div>
+                )}
+              </div>
+            ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSendMessage} className="message-input-form">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder={`Type your ${isGroupChat ? 'class' : ''} message...`}
+          />
+          <button type="submit" className="send-button">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
