@@ -28,7 +28,8 @@
     background-color: #e9ecef;
 }
 
-.parent-item.selected {
+.parent-item.selected,
+.all-parents-item.selected {
     background-color: #e3f2fd;
 }
 

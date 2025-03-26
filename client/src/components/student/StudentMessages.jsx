@@ -25,8 +25,9 @@ const StudentMessages = ({ student }) => {
         transports: ['polling', 'websocket']
     });
 
-    // Join classroom room
+    // Join room
     socketRef.current.emit('joinRoom', student.classroomId._id);
+    socketRef.current.emit('joinRoom', student.teacherId);
 
     // Load existing messages
     fetchMessages();
@@ -38,9 +39,17 @@ const StudentMessages = ({ student }) => {
 
     return () => {
       socketRef.current.emit('leaveRoom', student.classroomId._id);
+      socketRef.current.emit('leaveRoom', student.teacherId);
       socketRef.current.disconnect();
     };
   }, [student?.classroomId?._id]);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+}, [messages, isGroupChat]);
 
   const fetchMessages = async () => {
     const token = localStorage.getItem('token');

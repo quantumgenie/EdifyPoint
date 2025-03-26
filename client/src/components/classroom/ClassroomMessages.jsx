@@ -36,8 +36,9 @@ const ClassroomMessages = ({ classroom }) => {
             transports: ['polling', 'websocket']
         });
 
-        // Join classroom room
+        // Join room
         socketRef.current.emit('joinRoom', classroom._id);
+        socketRef.current.emit('joinRoom', teacher._id);
 
         // Load existing messages
         fetchMessages();
@@ -49,9 +50,17 @@ const ClassroomMessages = ({ classroom }) => {
 
         return () => {
             socketRef.current.emit('leaveRoom', classroom._id);
+            socketRef.current.emit('leaveRoom', teacher._id);
             socketRef.current.disconnect();
         };
     }, [classroom._id, teacher]);
+
+    // Auto-scroll to bottom of chat
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, isGroupChat, selectedParent]);
 
     const fetchMessages = async () => {
         const token = localStorage.getItem('token');
@@ -117,7 +126,7 @@ const ClassroomMessages = ({ classroom }) => {
     return (
         <div className="messages-container">
             <div className="parents-sidebar">
-                <div className="all-parents-item" onClick={() => setIsGroupChat(true)}>
+                <div className={`all-parents-item ${isGroupChat ? 'selected' : ''}`} onClick={() => setIsGroupChat(true)}>
                     <div className="parent-avatar">
                         <img src="/group-icon.svg" alt="All Parents" />
                     </div>
@@ -128,7 +137,7 @@ const ClassroomMessages = ({ classroom }) => {
                     .map(student => (
                         <div
                             key={student._id}
-                            className={`parent-item ${(!isGroupChat && selectedParent?._id === student.parentId) ? 'selected' : ''}`}
+                            className={`parent-item ${(!isGroupChat && selectedParent === student.parentId && selectedStudent === student) ? 'selected' : ''}`}
                             onClick={() => {
                                 setSelectedParent(student.parentId);
                                 setSelectedStudent(student);

@@ -27,7 +27,9 @@ function initializeSocket(server) {
             if (message.isGroupMessage) {
                 io.to(message.classroom).emit('receiveMessage', message);
             } else {
-                socket.to(message.receiver).emit('receiveMessage', message);
+                io.to(message.receiver).emit('receiveMessage', message);
+                io.to(message.sender).emit('receiveMessage', message);
+                console.log('DM sent to sender:', message.sender, 'and receiver:', message.receiver);
             }
         });
 
