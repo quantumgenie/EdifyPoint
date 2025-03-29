@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import '../../styles/classroom/ClassroomEventsAndReports.css';
 import CreateEventModal from '../CreateEventModal';
 import CreateReportModal from '../CreateReportModal';
+import { useSocket } from '../../context/SocketContext';
 
 const ClassroomEventsAndReports = ({ classroom }) => {
   const [loading, setLoading] = useState(true);
@@ -18,7 +19,7 @@ const ClassroomEventsAndReports = ({ classroom }) => {
   const [studentReports, setStudentReports] = useState([]);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const [showCreateReportModal, setShowCreateReportModal] = useState(false);
-
+  const socket = useSocket();
   useEffect(() => {
       const fetchEvents = async () => {
         try {
@@ -76,6 +77,8 @@ const ClassroomEventsAndReports = ({ classroom }) => {
         setEvents(prevEvents => prevEvents.map(event => 
           event._id === selectedEvent._id ? response.data : event
         ));
+        socket.emit('updateEvent', response.data);
+
       } else {
         const response = await axios.post(
           `http://localhost:8080/api/classroom/events/create-event/${id}`,
@@ -84,6 +87,7 @@ const ClassroomEventsAndReports = ({ classroom }) => {
         );
         
         setEvents(prevEvents => [...prevEvents, response.data]);
+        socket.emit('newEvent', response.data);
       }
       
       setShowCreateEventModal(false);
@@ -136,6 +140,7 @@ const ClassroomEventsAndReports = ({ classroom }) => {
             report._id === selectedReport._id ? response.data : report
           )
         );
+        socket.emit('updateReport', response.data);
       } else {
         const response = await axios.post(
           `http://localhost:8080/api/classroom/reports/create-report/${id}/${selectedStudent._id}`,
@@ -143,6 +148,7 @@ const ClassroomEventsAndReports = ({ classroom }) => {
           { headers }
         );
         setStudentReports(prevReports => [...prevReports, response.data]);
+        socket.emit('newReport', response.data);
       }
       setShowCreateReportModal(false);
       setSelectedReport(null);

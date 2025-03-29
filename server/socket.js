@@ -91,21 +91,22 @@ function initializeSocket(server) {
         });
 
         // Event notifications
-        socket.on('createEvent', (event) => {
-            io.to(event.classroom).emit('newEvent', event);
+        socket.on('newEvent', (event) => {
+            io.to(event.classId).emit('newEvent', event);
         });
 
         socket.on('updateEvent', (event) => {
-            io.to(event.classroom).emit('updatedEvent', event);
+            io.to(event.classId).emit('updateEvent', event);
         });
 
         // Report notifications
-        socket.on('createReport', (report) => {
-            io.to(report.classroom).emit('newReport', report);
+        socket.on('newReport', (report) => {
+            io.to(report.studentId._id).emit('newReport', report);
         });
 
         socket.on('updateReport', (report) => {
-            io.to(report.classroom).emit('updatedReport', report);
+            io.to(report.studentId._id).emit('updateReport', report);
+            console.log('Report updated on room :', report.studentId._id)
         });
 
         socket.on('disconnect', () => {

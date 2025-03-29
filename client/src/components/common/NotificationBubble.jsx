@@ -35,6 +35,7 @@ const NotificationBubble = () => {
       if (studentClassroomId) {
         socket.emit('joinRoom', studentClassroomId);
         socket.emit('joinRoom', studentTeacherId);
+        socket.emit('joinRoom', studentId);
       }
     }
 
@@ -61,7 +62,7 @@ const NotificationBubble = () => {
         });
       });
 
-      socket.on('updatedEvent', (event) => {
+      socket.on('updateEvent', (event) => {
         addNotification({
           type: 'event',
           content: `Event updated: ${event.title}`,
@@ -78,6 +79,16 @@ const NotificationBubble = () => {
           read: false
         });
       });
+
+      socket.on('updateReport', (report) => {
+        addNotification({
+          type: 'report',
+          content: `Report updated`,
+          timestamp: new Date(),
+          read: false
+        });
+      });
+
 
       socket.on('newMessage', (message) => {
         if (message.senderName !== userName) {
@@ -105,12 +116,14 @@ const NotificationBubble = () => {
         if (studentClassroomId) {
           socket.emit('leaveRoom', studentClassroomId);
           socket.emit('leaveRoom', studentTeacherId);
+          socket.emit('leaveRoom', studentId);
         }
       }
       socket.off('newMessage');
       socket.off('newEvent');
-      socket.off('updatedEvent');
+      socket.off('updateEvent');
       socket.off('newReport');
+      socket.off('updateReport');
     };
   }, [location.pathname, socket, classroomId, studentId]);
 
