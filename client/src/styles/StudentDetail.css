@@ -42,6 +42,12 @@
   gap: 1rem;
 }
 
+.notification-wrapper {
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+}
+
 .user-info {
   display: flex;
   align-items: center;

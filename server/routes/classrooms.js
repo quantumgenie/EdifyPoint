@@ -28,13 +28,9 @@ router.post('/', authMiddleware, verifyTeacher, async (req, res) => {
 // Get all classrooms for a teacher with student count
 router.get('/teacher', authMiddleware, verifyTeacher, async (req, res) => {
   try {
-    console.log('Fetching classrooms for teacher:', req.user.id);
-    
     const classrooms = await Classroom.find({ teacherId: req.user.id })
       .populate('students', 'firstName lastName')
       .sort({ createdAt: -1 });
-
-    console.log('Found classrooms:', classrooms);
 
     const classroomsWithCount = classrooms.map(classroom => ({
       _id: classroom._id,

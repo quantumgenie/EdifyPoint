@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import io from 'socket.io-client';
+import { useSocket } from '../../context/SocketContext';
 import PropTypes from 'prop-types';
 import '../../styles/student/StudentMessages.css';
 
@@ -10,53 +10,40 @@ const StudentMessages = ({ student }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isGroupChat, setIsGroupChat] = useState(false);
-  const socketRef = useRef();
   const messagesEndRef = useRef();
+  const socket = useSocket();
 
   useEffect(() => {
-    if (!student?.classroomId?._id) {
+    if (!student?.classroomId?._id || !socket) {
       setLoading(false);
       return;
     }
-
-    // Connect to Socket.IO server
-    socketRef.current = io(import.meta.env.VITE_API_URL || 'http://localhost:8080', {
-        withCredentials: true,
-        transports: ['polling', 'websocket']
-    });
-
-    // Join room
-    socketRef.current.emit('joinRoom', student.classroomId._id);
-    socketRef.current.emit('joinRoom', student.teacherId);
 
     // Load existing messages
     fetchMessages();
 
     // Listen for new messages
-    socketRef.current.on('receiveMessage', (message) => {
-      setMessages(prev => Array.isArray(prev) ? [...prev, message] : [message]);
+    socket.on('receiveMessage', (message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     });
 
     return () => {
-      socketRef.current.emit('leaveRoom', student.classroomId._id);
-      socketRef.current.emit('leaveRoom', student.teacherId);
-      socketRef.current.disconnect();
+      socket.off('receiveMessage');
     };
-  }, [student?.classroomId?._id]);
+  }, [student?.classroomId?._id, student?.teacherId, socket]);
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
-    if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-}, [messages, isGroupChat]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isGroupChat]);
 
   const fetchMessages = async () => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/messages/classroom/${student.classroomId._id}`, 
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/messages/classroom/${student.classroomId._id}`, 
         { headers }
       );
       setMessages(Array.isArray(response.data) ? response.data : []);
@@ -87,11 +74,11 @@ const StudentMessages = ({ student }) => {
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const response = await axios.post(
-        'http://localhost:8080/api/messages', 
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/messages`, 
         messageData, 
         { headers }
       );
-      socketRef.current.emit('sendMessage', response.data);
+      socket.emit('sendMessage', response.data);
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);

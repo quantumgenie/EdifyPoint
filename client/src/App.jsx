@@ -10,27 +10,30 @@ import ParentDashboard from './pages/ParentDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import ClassroomDetail from './pages/ClassroomDetail'
 import StudentDetail from './pages/StudentDetail'
+import { SocketProvider } from './context/SocketContext'
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* public routes */}
-        <Route path="/" element={<Home />}/>
-        <Route path="/login" element={<Login />}/>
-        <Route path="/signup" element={<SignUp />}/>
-        
-        {/* protected routes */}
-        <Route element={<ProtectedRoute/>}>
-          <Route path="/teacher/dashboard" element={<TeacherDashboard />}/>
-          <Route path="/parent/dashboard" element={<ParentDashboard />}/>
-          <Route path="/classroom/:id" element={<ClassroomDetail />} />
-          <Route path="/student/:studentId" element={<StudentDetail />} />
-        </Route>
+      <SocketProvider>
+        <Routes>
+          {/* public routes */}
+          <Route path="/" element={<Home />}/>
+          <Route path="/login" element={<Login />}/>
+          <Route path="/signup" element={<SignUp />}/>
+          
+          {/* protected routes */}
+          <Route element={<ProtectedRoute/>}>
+            <Route path="/teacher/dashboard" element={<TeacherDashboard />}/>
+            <Route path="/parent/dashboard" element={<ParentDashboard />}/>
+            <Route path="/classroom/:id" element={<ClassroomDetail />} />
+            <Route path="/student/:studentId" element={<StudentDetail />} />
+          </Route>
 
-        {/* fallback route */}
-        <Route path="*" element={<Navigate to="/login" />}/>
-      </Routes>  
+          {/* fallback route */}
+          <Route path="*" element={<Navigate to="/login" />}/>
+        </Routes>  
+      </SocketProvider>
     </Router>
   )
 }

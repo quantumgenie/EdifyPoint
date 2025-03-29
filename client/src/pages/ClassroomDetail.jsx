@@ -9,6 +9,7 @@ import ClassroomEventsAndReports from '../components/classroom/ClassroomEventsAn
 import ClassroomModules from '../components/classroom/ClassroomModules';
 import ClassroomMessages from '../components/classroom/ClassroomMessages';
 import EditClassModal from '../components/EditClassModal';
+import NotificationBubble from '../components/common/NotificationBubble';
 
 const ClassroomDetail = () => {
   const { id } = useParams();
@@ -17,6 +18,7 @@ const ClassroomDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userName = localStorage.getItem('userName');
+  const userId = localStorage.getItem('userId');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -25,6 +27,19 @@ const ClassroomDetail = () => {
   useEffect(() => {
     fetchClassroom();
   }, [id]);
+
+  useEffect(() => {
+    if (classroom?._id) {
+      localStorage.setItem(`classroom_${classroom._id}_classroom`, classroom._id);
+      localStorage.setItem(`classroom_${classroom._id}_teacher`, userId);
+    }
+    return () => {
+      if (classroom?._id) {
+        localStorage.removeItem(`classroom_${classroom._id}_classroom`);
+        localStorage.removeItem(`classroom_${classroom._id}_teacher`);
+      }
+    };
+  }, [classroom]);
 
   const handleSaveClassroom = async (updatedData) => {
     try {
@@ -126,67 +141,77 @@ const ClassroomDetail = () => {
 
   return (
     <div className="classroom-detail">
-      <header className="classroom-header">
-        <div className="left-section logo">
-          <img src="/flower-of-life.png" alt="EdifyPoint" />
-          <span className="logo-text">EdifyPoint</span>
-        </div>
-        <div className="center-section">
-          <h1>{classroom.name}</h1>
-        </div>
-        <div className="right-section">
-          <div className="user-info">
-            <div className="notification-icon">🔔</div>
-            <div className="user-name">{userName} ▼</div>
-          </div>
-        </div>
-      </header>
+      {loading ? (
+        <div>Loading...</div>
+      ) : error ? (
+        <div>Error: {error}</div>
+      ) : (
+        <>
+          <header className="classroom-header">
+            <div className="left-section logo">
+              <img src="/flower-of-life.png" alt="EdifyPoint" />
+              <span className="logo-text">EdifyPoint</span>
+            </div>
+            <div className="center-section">
+              <h1>{classroom.name}</h1>
+            </div>
+            <div className="right-section">
+              <div className="user-info">
+                <div className="notification-wrapper">
+                  <NotificationBubble />
+                </div>
+                <div className="user-name">{userName} ▼</div>
+              </div>
+            </div>
+          </header>
 
-      <main className="classroom-content">
-        <Tabs>
-          <TabList>
-            <button onClick={() => navigate('/teacher/dashboard')} className="back-button">
-              ← Back to classes
-            </button>
-            <div className="tab-wrapper">
-              <Tab>Students</Tab>
-              <Tab>Events & Reports</Tab>
-              <Tab>Modules</Tab>
-              <Tab>Messages</Tab>
-            </div>
-            <div className="settings-container">
-              {settingsButton}
-            </div>
-          </TabList>
-          <TabPanel>
-            <ClassroomStudents
-              classroom={classroom}
-            />
-          </TabPanel>
-          <TabPanel>
-            <ClassroomEventsAndReports
-              classroom={classroom}
-            />
-          </TabPanel>
-          <TabPanel>
-            <ClassroomModules
-              classroom={classroom}
-            />
-          </TabPanel>
-          <TabPanel>
-            <ClassroomMessages
-              classroom={classroom}
-            />
-          </TabPanel>
-        </Tabs>
-      </main>
-      <EditClassModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        classroom={classroom}
-        onSave={handleSaveClassroom}
-        onStudentsUpdate={handleStudentsUpdate}
-      />
+          <main className="classroom-content">
+            <Tabs>
+              <TabList>
+                <button onClick={() => navigate('/teacher/dashboard')} className="back-button">
+                  ← Back to classes
+                </button>
+                <div className="tab-wrapper">
+                  <Tab>Students</Tab>
+                  <Tab>Events & Reports</Tab>
+                  <Tab>Modules</Tab>
+                  <Tab>Messages</Tab>
+                </div>
+                <div className="settings-container">
+                  {settingsButton}
+                </div>
+              </TabList>
+              <TabPanel>
+                <ClassroomStudents
+                  classroom={classroom}
+                />
+              </TabPanel>
+              <TabPanel>
+                <ClassroomEventsAndReports
+                  classroom={classroom}
+                />
+              </TabPanel>
+              <TabPanel>
+                <ClassroomModules
+                  classroom={classroom}
+                />
+              </TabPanel>
+              <TabPanel>
+                <ClassroomMessages
+                  classroom={classroom}
+                />
+              </TabPanel>
+            </Tabs>
+          </main>
+          <EditClassModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            classroom={classroom}
+            onSave={handleSaveClassroom}
+            onStudentsUpdate={handleStudentsUpdate}
+          />
+        </>
+      )}
     </div>
   );
 };

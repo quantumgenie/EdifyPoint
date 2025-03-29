@@ -10,6 +10,7 @@ import StudentEvents from '../components/student/StudentEvents';
 import StudentReports from '../components/student/StudentReports';
 import StudentModules from '../components/student/StudentModules';
 import StudentMessages from '../components/student/StudentMessages';
+import NotificationBubble from '../components/common/NotificationBubble';
 
 const StudentDetail = () => {
   const { studentId } = useParams();
@@ -22,6 +23,19 @@ const StudentDetail = () => {
   useEffect(() => {
     fetchStudentDetails();
   }, [studentId]);
+
+  useEffect(() => {
+    if (student?.classroomId) {
+      localStorage.setItem(`student_${student._id}_classroom`, student.classroomId._id);
+      localStorage.setItem(`student_${student._id}_teacher`, student.teacherId);
+    }
+    return () => {
+      if (student?._id) {
+        localStorage.removeItem(`student_${student._id}_classroom`);
+        localStorage.removeItem(`student_${student._id}_teacher`);
+      }
+    };
+  }, [student]);
 
   const fetchStudentDetails = async () => {
     try {
@@ -67,53 +81,63 @@ const StudentDetail = () => {
   }
   return (
     <div className="student-detail">
-      <header className="student-header">
-          <div className="left-section logo">
-            <img src="/flower-of-life.png" alt="EdifyPoint" />
-            <span className="logo-text">EdifyPoint</span>
-          </div>
-          <div className="center-section">
-            <h1>{student.firstName} {student.lastName}</h1>
-          </div>
-          <div className="right-section">
-            <div className="user-info">
-              <div className="notification-icon">🔔</div>
-              <div className="user-name">{userName} ▼</div>
+      {loading ? (
+        <div>Loading...</div>
+      ) : error ? (
+        <div>Error: {error}</div>
+      ) : (
+        <>
+          <header className="student-header">
+            <div className="left-section logo">
+              <img src="/flower-of-life.png" alt="EdifyPoint" />
+              <span className="logo-text">EdifyPoint</span>
             </div>
-          </div>
-      </header>
-
-      <main className="student-content">
-          <Tabs>
-            <TabList>
-              <button onClick={() => navigate('/parent/dashboard')} className="back-button">
-                ← Back to students
-              </button>
-              <div className="tab-wrapper">
-                <Tab>Modules</Tab>
-                <Tab>Events</Tab>
-                <Tab>Reports</Tab>
-                <Tab>Messages</Tab>
+            <div className="center-section">
+              <h1>{student.firstName} {student.lastName}</h1>
+            </div>
+            <div className="right-section">
+              <div className="user-info">
+                <div className="notification-wrapper">
+                  <NotificationBubble />
+                </div>
+                <div className="user-name">{userName} ▼</div>
               </div>
-            </TabList>
+            </div>
+          </header>
 
-            <TabPanel>
-              <StudentModules student={student} />
-            </TabPanel>
-            
-            <TabPanel>
-              <StudentEvents student={student} />
-            </TabPanel>
-            
-            <TabPanel>
-              <StudentReports student={student} />
-            </TabPanel>
+          <main className="student-content">
+            <Tabs>
+              <TabList>
+                <button onClick={() => navigate('/parent/dashboard')} className="back-button">
+                  ← Back to students
+                </button>
+                <div className="tab-wrapper">
+                  <Tab>Modules</Tab>
+                  <Tab>Events</Tab>
+                  <Tab>Reports</Tab>
+                  <Tab>Messages</Tab>
+                </div>
+              </TabList>
 
-            <TabPanel>
-              <StudentMessages student={student} />
-            </TabPanel>
-          </Tabs>
-      </main>
+              <TabPanel>
+                <StudentModules student={student} />
+              </TabPanel>
+              
+              <TabPanel>
+                <StudentEvents student={student} />
+              </TabPanel>
+              
+              <TabPanel>
+                <StudentReports student={student} />
+              </TabPanel>
+
+              <TabPanel>
+                <StudentMessages student={student} />
+              </TabPanel>
+            </Tabs>
+          </main>
+        </>
+      )}
     </div>
   );
 };

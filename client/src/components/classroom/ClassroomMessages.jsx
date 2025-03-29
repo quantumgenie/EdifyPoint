@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSocket } from '../../context/SocketContext';
 import axios from 'axios';
-import io from 'socket.io-client';
 import PropTypes from 'prop-types';
 import '../../styles/classroom/ClassroomMessages.css';
 
@@ -12,8 +12,8 @@ const ClassroomMessages = ({ classroom }) => {
     const [isGroupChat, setIsGroupChat] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const socketRef = useRef();
     const messagesEndRef = useRef();
+    const socket = useSocket();
 
     // Transform teacher data if needed
     const teacher = classroom.teacher || (classroom.teacherId && {
@@ -25,35 +25,24 @@ const ClassroomMessages = ({ classroom }) => {
     console.log('classroom.students:', classroom.students);
     
     useEffect(() => {
-        if (!teacher) {
+        if (!teacher || !socket) {
             setLoading(false);
             return;
         }
-
-        // Connect to Socket.IO server
-        socketRef.current = io(import.meta.env.VITE_API_URL || 'http://localhost:8080', {
-            withCredentials: true,
-            transports: ['polling', 'websocket']
-        });
-
-        // Join room
-        socketRef.current.emit('joinRoom', classroom._id);
-        socketRef.current.emit('joinRoom', teacher._id);
-
         // Load existing messages
         fetchMessages();
 
         // Listen for new messages
-        socketRef.current.on('receiveMessage', (message) => {
-            setMessages(prev => Array.isArray(prev) ? [...prev, message] : [message]);
+        socket.on('receiveMessage', (message) => {
+            setMessages(prevMessages => [...prevMessages, message]);
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         });
 
+        // Cleanup on unmount
         return () => {
-            socketRef.current.emit('leaveRoom', classroom._id);
-            socketRef.current.emit('leaveRoom', teacher._id);
-            socketRef.current.disconnect();
+            socket.off('receiveMessage');
         };
-    }, [classroom._id, teacher]);
+    }, [classroom._id, teacher, socket]);
 
     // Auto-scroll to bottom of chat
     useEffect(() => {
@@ -67,7 +56,7 @@ const ClassroomMessages = ({ classroom }) => {
         const headers = { Authorization: `Bearer ${token}` };
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/messages/classroom/${classroom._id}`, 
+                `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/messages/classroom/${classroom._id}`, 
                 { headers }
             );
             setMessages(Array.isArray(response.data) ? response.data : []);
@@ -103,7 +92,7 @@ const ClassroomMessages = ({ classroom }) => {
                 messageData,
                 { headers }
             );
-            socketRef.current.emit('sendMessage', response.data);
+            socket.emit('sendMessage', response.data);
             setNewMessage('');
         } catch (error) {
             console.error('Error sending message:', error);
