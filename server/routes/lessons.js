@@ -133,4 +133,67 @@ router.post('/reorder/:moduleId', authMiddleware, verifyTeacher, async (req, res
   }
 });
 
+// Get quiz attempts for a student
+router.get('/:lessonId/attempts/:studentId', authMiddleware, async (req, res) => {
+  try {
+    const lesson = await Lesson.findById(req.params.lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
+
+    const attempts = lesson.quizAttempts.filter(
+      attempt => attempt.studentId.toString() === req.params.studentId
+    ).sort((a, b) => b.attemptDate - a.attemptDate);
+
+    res.json(attempts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Submit a quiz attempt
+router.post('/:lessonId/submit-quiz', authMiddleware, async (req, res) => {
+  try {
+    const { studentId, answers } = req.body;
+    const lesson = await Lesson.findById(req.params.lessonId);
+    
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
+
+    if (!lesson.quiz || lesson.quiz.length === 0) {
+      return res.status(400).json({ message: 'This lesson has no quiz' });
+    }
+
+    if (answers.length !== lesson.quiz.length) {
+      return res.status(400).json({ message: 'Invalid number of answers' });
+    }
+
+    // Calculate score
+    let correctAnswers = 0;
+    answers.forEach((answer, index) => {
+      if (answer === lesson.quiz[index].correctAnswer) {
+        correctAnswers++;
+      }
+    });
+
+    const score = Math.round((correctAnswers / lesson.quiz.length) * 100);
+
+    // Create new attempt
+    const attempt = {
+      studentId,
+      score,
+      answers,
+      attemptDate: new Date()
+    };
+
+    lesson.quizAttempts.push(attempt);
+    await lesson.save();
+
+    res.json(attempt);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

@@ -10,6 +10,10 @@ const StudentModules = ({ student }) => {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [quizAnswers, setQuizAnswers] = useState([]);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState(null);
+  const [quizAttempts, setQuizAttempts] = useState([]);
 
   useEffect(() => {
     if (student?.classroomId?._id) {
@@ -32,7 +36,6 @@ const StudentModules = ({ student }) => {
     }
   };
 
-  // Fetch lessons for a module
   const fetchLessonsForModule = async (moduleId) => {
     try {
       const token = localStorage.getItem('token');
@@ -48,7 +51,6 @@ const StudentModules = ({ student }) => {
     }
   };
 
-  // Fetch lessons when a module is selected
   useEffect(() => {
     if (selectedModule) {
       fetchLessonsForModule(selectedModule._id);
@@ -57,8 +59,54 @@ const StudentModules = ({ student }) => {
     }
   }, [selectedModule]);
 
-  const handleLessonClick = (lesson) => {
+  const handleLessonClick = async (lesson) => {
     setSelectedLesson(lesson);
+    setQuizAnswers([]);
+    setQuizSubmitted(false);
+    setQuizScore(null);
+    
+    // Fetch quiz attempts for this lesson
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `http://localhost:8080/api/lessons/${lesson._id}/attempts/${student._id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setQuizAttempts(response.data);
+    } catch (err) {
+      console.error('Error fetching quiz attempts:', err);
+    }
+  };
+
+  const handleAnswerSelect = (questionIndex, answerIndex) => {
+    const newAnswers = [...quizAnswers];
+    newAnswers[questionIndex] = answerIndex;
+    setQuizAnswers(newAnswers);
+  };
+
+  const handleQuizSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:8080/api/lessons/${selectedLesson._id}/submit-quiz`,
+        {
+          studentId: student._id,
+          answers: quizAnswers
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setQuizScore(response.data.score);
+      setQuizSubmitted(true);
+      setQuizAttempts([...quizAttempts, response.data]);
+    } catch (err) {
+      console.error('Error submitting quiz:', err);
+    }
+  };
+
+  const handleRetakeQuiz = () => {
+    setQuizAnswers([]);
+    setQuizSubmitted(false);
+    setQuizScore(null);
   };
 
   if (loading) {
@@ -71,106 +119,128 @@ const StudentModules = ({ student }) => {
 
   return (
     <div className="student-modules-container">
-      {/* Modules List */}
       <div className="modules-list">
-          {modules.map(module => (
-            <div
-              key={module._id}
-              className={`module-item ${selectedModule?._id === module._id ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedModule(module);
-                setSelectedLesson(null);
-              }}
+        {modules.map(module => (
+          <div
+            key={module._id}
+            className={`module-item ${selectedModule?._id === module._id ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedModule(module);
+              setSelectedLesson(null);
+            }}
+          >
+            <div 
+              className="module-icon"
+              style={{ backgroundColor: module.color || '#1a73e8' }}
             >
-              <div 
-                className="module-icon"
-                style={{ backgroundColor: module.color || '#1a73e8' }}
-              >
-                {module.name.charAt(0)}
-              </div>
-              <div className="module-name">{module.name}</div>
+              {module.name.charAt(0)}
             </div>
-          ))}
+            <div className="module-name">{module.name}</div>
+          </div>
+        ))}
       </div>
-      {/* Lessons List */}
-      <div className="lessons-list">
+
         {selectedModule ? (
-          <>
+          <div className="lessons-list">
             {lessons.map((lesson, index) => (
               <div
                 key={lesson._id}
-                className={`lesson-item ${selectedLesson?._id === lesson._id ? 'selected' : ''}`}
+                className={`lesson-item ${selectedLesson?._id === lesson._id ? 'active' : ''}`}
                 onClick={() => handleLessonClick(lesson)}
               >
                 <div className="lesson-number">{index + 1}</div>
-                <div className="lesson-title">Lesson {index + 1}</div>
+                <div className="lesson-title">{lesson.name}</div>
               </div>
             ))}
-          </>
+          </div>
         ) : (
-          <div className="no-selection-message">
-            Select a module to view its lessons
+          <div className="select-module-message">
+            Please select a module to view its lessons
           </div>
         )}
-      </div>
-      {/* Lesson Content */}
-      <div className="lesson-content">
-        {selectedLesson ? (
-          <>
-            <div className="lesson-content-header">
-                <h1 className="lesson-content-title">{selectedLesson.name}</h1>
-              </div>
-              <div className="content-section">
-                {selectedLesson.description && (
-                  <div className="lesson-description">
-                    {selectedLesson.description}
-                  </div>
-                )}
 
-                {selectedLesson.videoUrl && (
-                  <div className="video-container">
-                    <iframe
-                      src={selectedLesson.videoUrl}
-                      title={selectedLesson.name}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                )}
-                {selectedLesson.quiz && selectedLesson.quiz.length > 0 && (
-                  <div className="quiz-section">
-                    <h2>Quiz</h2>
-                    {selectedLesson.quiz.map((question, index) => (
-                      <div key={index} className="quiz-question">
-                        <h3>Question {index + 1}: {question.text}</h3>
-                        <div className="options">
-                          {question.options.map((option, optionIndex) => (
-                            <div key={optionIndex} className="option">
+        {selectedLesson && (
+          <div className="lesson-content">
+            <div className="lesson-content-header">
+              {quizScore !== null && (
+                <div className="quiz-score">
+                  Latest Score: {quizScore}%
+                </div>
+              )}
+              <h2 className="lesson-content-title">{selectedLesson.name}</h2>
+            </div>
+
+            <div className="lesson-description">{selectedLesson.description}</div>
+            
+            {selectedLesson.videoUrl && (
+              <div className="video-container">
+                <iframe
+                  src={selectedLesson.videoUrl}
+                  title={selectedLesson.name}
+                  frameBorder="0"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
+
+            {selectedLesson.quiz && selectedLesson.quiz.length > 0 && (
+              <div className="quiz-section">
+                <h3>Quiz</h3>
+                {!quizSubmitted ? (
+                  <>
+                    {selectedLesson.quiz.map((question, qIndex) => (
+                      <div key={qIndex} className="quiz-question">
+                        <p>{question.text}</p>
+                        <div className="quiz-options">
+                          {question.options.map((option, oIndex) => (
+                            <label key={oIndex} className="quiz-option">
                               <input
                                 type="radio"
-                                id={`q${index}-o${optionIndex}`}
-                                name={`question-${index}`}
-                                value={optionIndex}
+                                name={`question-${qIndex}`}
+                                checked={quizAnswers[qIndex] === oIndex}
+                                onChange={() => handleAnswerSelect(qIndex, oIndex)}
                               />
-                              <label htmlFor={`q${index}-o${optionIndex}`}>
-                                {option}
-                              </label>
-                            </div>
+                              {option}
+                            </label>
                           ))}
                         </div>
                       </div>
                     ))}
+                    <button
+                      className="submit-quiz-btn"
+                      onClick={handleQuizSubmit}
+                      disabled={quizAnswers.length !== selectedLesson.quiz.length}
+                    >
+                      Submit Quiz
+                    </button>
+                  </>
+                ) : (
+                  <div className="quiz-results">
+                    <h4>Quiz Results</h4>
+                    <p>Your score: {quizScore}%</p>
+                    <button className="retake-quiz-btn" onClick={handleRetakeQuiz}>
+                      Retake Quiz
+                    </button>
+                  </div>
+                )}
+
+                {quizAttempts.length > 0 && (
+                  <div className="quiz-history">
+                    <h4>Previous Attempts</h4>
+                    <div className="attempts-list">
+                      {quizAttempts.map((attempt, index) => (
+                        <div key={index} className="attempt-item">
+                          <span>Score: {attempt.score}% </span>
+                          <span>Date: {new Date(attempt.attemptDate).toLocaleDateString()}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-            </>
-          ) : (
-            <div className="no-selection-message">
-              Select a lesson to view its content
-            </div>
-          )}
-    </div>
+            )}
+          </div>
+        )}
     </div>
   );
 };
@@ -179,10 +249,8 @@ StudentModules.propTypes = {
   student: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     classroomId: PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      school: PropTypes.string.isRequired
-    })
+      _id: PropTypes.string.isRequired
+    }).isRequired
   }).isRequired
 };
 

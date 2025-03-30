@@ -1,8 +1,9 @@
 .student-modules-container {
   display: grid;
-  grid-template-columns: 180px 180px 1fr;
+  grid-template-columns: 180px 200px 1fr;
   height: calc(100vh - 120px);
   background: #fff;
+  overflow-y: auto;
 }
 
 .modules-list {
@@ -96,9 +97,20 @@
 
 .lesson-content-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.quiz-score {
+  align-self: flex-end;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 12px;
+  padding: 8px 8px;
+  border-radius: 4px;
+  background: #baf8d0;
+  font-weight: 500;
 }
 
 .lesson-content-title {

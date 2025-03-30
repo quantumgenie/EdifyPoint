@@ -1,7 +1,7 @@
 /* Modules Layout */
 .modules-container {
     display: grid;
-    grid-template-columns: 180px 180px 1fr;
+    grid-template-columns: 180px 200px 1fr;
     height: calc(100vh - 120px);
     background: #fff;
   }
@@ -171,6 +171,7 @@
   
   .lesson-actions {
     position: relative;
+    align-self: flex-end;
   }
   
   .lesson-actions-button {
@@ -179,6 +180,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: flex-end;
     border-radius: 50%;
     cursor: pointer;
     background: none;

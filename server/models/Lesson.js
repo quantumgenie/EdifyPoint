@@ -1,5 +1,25 @@
 const mongoose = require('mongoose');
 
+const quizAttemptSchema = new mongoose.Schema({
+  studentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Student',
+    required: true
+  },
+  score: {
+    type: Number,
+    required: true
+  },
+  answers: [{
+    type: Number,
+    required: true
+  }],
+  attemptDate: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const lessonSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -42,6 +62,7 @@ const lessonSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  quizAttempts: [quizAttemptSchema],
   createdAt: { 
     type: Date, 
     default: Date.now 

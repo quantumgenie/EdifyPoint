@@ -342,7 +342,7 @@ const ClassrooomModules = ({ classroom }) => {
                     onClick={() => handleLessonClick(lesson)}
                 >
                     <div className="lesson-number">{index + 1}</div>
-                    <div className="lesson-title">Lesson {index + 1}</div>
+                    <div className="lesson-title">{lesson.name}</div>
                 </div>
                 ))}
                 <div className="add-new" onClick={() => {
@@ -365,30 +365,30 @@ const ClassrooomModules = ({ classroom }) => {
             {selectedLesson ? (
             <>
                 <div className="lesson-content-header">
-                <h1 className="lesson-content-title">{selectedLesson.name}</h1>
-                <div className="lesson-actions">
-                    <button 
-                    className="lesson-actions-button" 
-                    onClick={handleLessonActionClick}
-                    >
-                    •••
-                    </button>
-                    {activeLessonDropdown === selectedLesson._id && (
-                    <div className="lesson-dropdown">
-                        <button onClick={(e) => handleEditLesson(e, selectedLesson)}>
-                        Edit
-                        </button>
-                        <button onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm('Are you sure you want to delete this lesson?')) {
-                            handleDeleteLesson(selectedLesson._id);
-                        }
-                        }}>
-                        Delete
-                        </button>
-                    </div>
-                    )}
-                </div>
+                  <div className="lesson-actions">
+                      <button 
+                      className="lesson-actions-button" 
+                      onClick={handleLessonActionClick}
+                      >
+                      •••
+                      </button>
+                      {activeLessonDropdown === selectedLesson._id && (
+                      <div className="lesson-dropdown">
+                          <button onClick={(e) => handleEditLesson(e, selectedLesson)}>
+                          Edit
+                          </button>
+                          <button onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this lesson?')) {
+                              handleDeleteLesson(selectedLesson._id);
+                          }
+                          }}>
+                          Delete
+                          </button>
+                      </div>
+                      )}
+                  </div>
+                  <h1 className="lesson-content-title">{selectedLesson.name}</h1>
                 </div>
 
                 <div className="content-section">
