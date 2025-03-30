@@ -13,13 +13,12 @@
 
 .create-class-modal {
   background: white;
-  padding: 2rem;
   border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
+  padding: 20px;
+  width: 500px;
+  max-width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
@@ -103,33 +102,20 @@
   border-top: 1px solid #eee;
 }
 
-.cancel-button,
 .submit-button {
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.cancel-button {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  color: #666;
-}
-
-.cancel-button:hover {
-  background: #eee;
-}
-
-.submit-button {
-  background: #4a90e2;
-  border: none;
+  width: 100%;
+  padding: 12px;
+  background-color: #0088cc;
   color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .submit-button:hover {
-  background: #357abd;
+  background: #006699;
 }
 
 @media (max-width: 600px) {

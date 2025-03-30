@@ -77,9 +77,6 @@ const CreateClassModal = ({ isOpen, onClose, onSubmit, classroom }) => {
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="cancel-button" onClick={onClose}>
-              Cancel
-            </button>
             <button type="submit" className="submit-button">
               {classroom ? 'Save Changes' : 'Create Class'}
             </button>

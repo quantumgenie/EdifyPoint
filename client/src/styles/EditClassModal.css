@@ -14,11 +14,13 @@
 .modal-content {
   background: white;
   border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
+  padding: 20px;
+  width: 500px;
+  max-width: 90%;
   max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
-  position: relative;
 }
 
 .modal-header {
@@ -31,19 +33,17 @@
 }
 
 .modal-header h2 {
-  margin: 0 auto;
-  padding-top: 4%;
-  font-size: 1.2rem;
-  color: #282727;
+  margin: 0;
+  font-size: 20px;
+  color: #333;
 }
 
 .close-button {
   background: none;
   border: none;
-  padding: 0 2% 4% 0;
-  font-size: 1.8rem;
+  font-size: 24px;
   cursor: pointer;
-  color: #282727;
+  color: #666;
 }
 
 .modal-tabs {
@@ -68,7 +68,8 @@
 }
 
 .modal-body {
-  padding: 20px 40px 20px 20px;
+  margin-top: 20px;
+  margin-bottom: 10px;
   overflow: auto;
 }
 
@@ -92,26 +93,23 @@
 }
 
 .modal-footer {
-  padding: 20px;
+  margin: 0;
   border-top: 1px solid #eee;
-  text-align: right;
 }
 
 .save-button {
-  display: block;
-  margin: 0 auto;
-  padding: 10px 24px;
-  background-color: #007bff;
+  width: 100%;
+  background-color: #0088cc;
   color: white;
   border: none;
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s;
 }
 
 .save-button:hover {
-  background-color: #0056b3;
+  background-color: #006699;
 }
 
 .save-button:disabled {
@@ -120,6 +118,12 @@
 }
 
 /* Students tab styles */
+.students-tab {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
 .students-list {
   margin-bottom: 20px;
 }
@@ -219,12 +223,13 @@
     margin-top: 0px;
     border-top: 1px solid #eee;
     padding-top: 0px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
   }
   
   .student-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: row;
   } 
 
   .student-info span {
