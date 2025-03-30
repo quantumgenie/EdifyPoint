@@ -32,9 +32,10 @@
   object-fit: contain;
 }
 
-.student-info {
+.studentcard-info {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.2rem;
   margin: 0;
 }

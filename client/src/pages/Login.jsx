@@ -31,6 +31,7 @@ const Login = () => {
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
       localStorage.setItem('userId', user.id);
+      localStorage.setItem('userEmail', user.email);
       
       // Redirect based on user role
       if (user.role === 'teacher') {

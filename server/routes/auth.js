@@ -148,6 +148,31 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Parent verify password endpoint
+router.post("/verify-password", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find parent
+    let user = await Parent.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    // Verify password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Invalid password" });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // Verify token and get user info
 router.get("/verify", authMiddleware, (req, res) => {
   res.json({ 

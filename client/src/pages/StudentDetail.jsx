@@ -11,6 +11,7 @@ import StudentReports from '../components/student/StudentReports';
 import StudentModules from '../components/student/StudentModules';
 import StudentMessages from '../components/student/StudentMessages';
 import NotificationBubble from '../components/common/NotificationBubble';
+import PasswordVerificationModal from '../components/student/PasswordVerificationModal';
 
 const StudentDetail = () => {
   const { studentId } = useParams();
@@ -18,6 +19,10 @@ const StudentDetail = () => {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
   const userName = localStorage.getItem('userName');
 
   useEffect(() => {
@@ -51,6 +56,16 @@ const StudentDetail = () => {
     }
   };
 
+  const handleTabSelect = (index) => {
+    if (index > 0 && !isPasswordVerified) {
+      setSelectedTabIndex(0); // Stay on current tab
+      setShowPasswordModal(true);
+      return false;
+    }
+    setSelectedTabIndex(index);
+    return true;
+  };
+
   if (loading) {
     return (
       <div className="student-detail loading">
@@ -79,65 +94,89 @@ const StudentDetail = () => {
       </div>
     );
   }
+
   return (
     <div className="student-detail">
-      {loading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div>Error: {error}</div>
-      ) : (
-        <>
-          <header className="student-header">
-            <div className="left-section logo">
-              <img src="/flower-of-life.png" alt="EdifyPoint" />
-              <span className="logo-text">EdifyPoint</span>
+      <header className="student-header">
+        <div className="left-section logo">
+          <img src="/flower-of-life.png" alt="EdifyPoint" />
+          <span className="logo-text">EdifyPoint</span>
+        </div>
+        <div className="center-section">
+          <h1>{student.firstName} {student.lastName}</h1>
+        </div>
+        <div className="right-section">
+          <div className="user-info">
+            <div className="notification-wrapper">
+              <NotificationBubble />
             </div>
-            <div className="center-section">
-              <h1>{student.firstName} {student.lastName}</h1>
+            <div className="user-name">{userName} ▼</div>
+          </div>
+        </div>
+      </header>
+
+      <main className="student-content">
+        <Tabs selectedIndex={selectedTabIndex} onSelect={handleTabSelect}>
+          <TabList>
+            <button onClick={() => navigate('/parent/dashboard')} className="back-button">
+              ← Back to students
+            </button>
+            <div className="tab-wrapper">
+              <Tab>Modules</Tab>
+              <Tab>Events</Tab>
+              <Tab>Reports</Tab>
+              <Tab>Messages</Tab>
             </div>
-            <div className="right-section">
-              <div className="user-info">
-                <div className="notification-wrapper">
-                  <NotificationBubble />
-                </div>
-                <div className="user-name">{userName} ▼</div>
+          </TabList>
+
+          <TabPanel>
+            <StudentModules student={student} />
+          </TabPanel>
+          <TabPanel>
+            {isPasswordVerified ? (
+              <StudentEvents student={student} />
+            ) : (
+              <div className="locked-content">
+                <p>Please verify your password to view content</p>
+                <button onClick={() => setShowPasswordModal(true)}>Verify Password</button>
               </div>
-            </div>
-          </header>
-
-          <main className="student-content">
-            <Tabs>
-              <TabList>
-                <button onClick={() => navigate('/parent/dashboard')} className="back-button">
-                  ← Back to students
-                </button>
-                <div className="tab-wrapper">
-                  <Tab>Modules</Tab>
-                  <Tab>Events</Tab>
-                  <Tab>Reports</Tab>
-                  <Tab>Messages</Tab>
-                </div>
-              </TabList>
-
-              <TabPanel>
-                <StudentModules student={student} />
-              </TabPanel>
-              
-              <TabPanel>
-                <StudentEvents student={student} />
-              </TabPanel>
-              
-              <TabPanel>
-                <StudentReports student={student} />
-              </TabPanel>
-
-              <TabPanel>
-                <StudentMessages student={student} />
-              </TabPanel>
-            </Tabs>
-          </main>
-        </>
-      )}
+            )}
+          </TabPanel>
+          <TabPanel>
+            {isPasswordVerified ? (
+              <StudentReports student={student} />
+            ) : (
+              <div className="locked-content">
+                <p>Please verify your password to view content</p>
+                <button onClick={() => setShowPasswordModal(true)}>Verify Password</button>
+              </div>
+            )}
+          </TabPanel>
+          <TabPanel>
+            {isPasswordVerified ? (
+              <StudentMessages student={student} />
+            ) : (
+              <div className="locked-content">
+                <p>Please verify your password to view content</p>
+                <button onClick={() => setShowPasswordModal(true)}>Verify Password</button>
+              </div>
+            )}
+          </TabPanel>
+        </Tabs>
+        <PasswordVerificationModal 
+          show={showPasswordModal}
+          onClose={() => {
+            setShowPasswordModal(false);
+            setSelectedTabIndex(0);
+          }}
+          onVerificationSuccess={() => {
+            setIsPasswordVerified(true);
+            setShowPasswordModal(false);
+            setSelectedTabIndex(selectedTabIndex);
+          }}
+          verifyingPassword={verifyingPassword}
+        />
+      </main>
     </div>
   );
 };

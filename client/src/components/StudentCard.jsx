@@ -9,7 +9,7 @@ const StudentCard = ({ student, onClick }) => {
         <img src="/student-avatar.png" alt="Student" />
       </div>
       <h3 className="studentcard-student-name">{student.firstName} {student.lastName}</h3>
-      <p className="student-info">
+      <p className="studentcard-info">
         {student.classroomId && (
           <>
             <span className="studentcard-classroom-name">{student.classroomId.name}</span>
